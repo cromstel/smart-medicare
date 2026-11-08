@@ -154,8 +154,8 @@ export function CriticalHealthAlertsSection({
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border/60">
             <div className="flex items-center gap-3">
               <div
-                className={`p-2.5 rounded-lg flex items-center justify-center text-white ${
-                  hasCritical ? 'bg-destructive' : 'bg-warning'
+                className={`p-2.5 rounded-lg flex items-center justify-center ${
+                  hasCritical ? 'bg-destructive text-destructive-foreground' : 'bg-warning text-warning-foreground'
                 }`}
               >
                 {hasCritical ? (

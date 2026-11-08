@@ -352,7 +352,7 @@ export function ShiftSchedulerModule() {
                           >
                             <div className="flex items-center justify-between">
                               <span className="font-bold text-foreground">{s.clinicianName}</span>
-                              {s.isOvertimeRisk && <Badge className="bg-warning text-black text-[8px]">OT RISK</Badge>}
+                              {s.isOvertimeRisk && <Badge className="bg-warning text-warning-foreground text-[8px]">OT RISK</Badge>}
                             </div>
                             <span className="text-[10px] text-muted-foreground block">{s.role}</span>
                           </div>
@@ -391,7 +391,7 @@ export function ShiftSchedulerModule() {
             </div>
 
             <Button
-              className="w-full bg-accent hover:bg-accent text-white font-bold"
+              className="w-full bg-accent hover:bg-accent text-accent-foreground font-bold"
               onClick={() => {
                 toast.success('Shift Swap Request submitted to Head Nurse for signoff');
                 setIsSwapDialogOpen(false);

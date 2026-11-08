@@ -464,7 +464,7 @@ export function InventoryForecastingModule() {
                               item.riskLevel === 'CRITICAL'
                                 ? 'bg-destructive text-destructive-foreground animate-pulse'
                                 : item.riskLevel === 'HIGH'
-                                ? 'bg-warning text-black'
+                                ? 'bg-warning text-warning-foreground'
                                 : item.riskLevel === 'UNKNOWN'
                                 ? 'bg-muted text-muted-foreground'
                                 : 'bg-success text-success-foreground'

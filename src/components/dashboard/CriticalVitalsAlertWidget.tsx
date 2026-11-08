@@ -71,12 +71,12 @@ export function CriticalVitalsAlertWidget({ className = '' }: { className?: stri
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
             <div
-              className={`p-2 rounded-lg text-white ${
+              className={`p-2 rounded-lg ${
                 criticalCount > 0
-                  ? 'bg-destructive'
+                  ? 'bg-destructive text-destructive-foreground'
                   : warningCount > 0
-                  ? 'bg-warning'
-                  : 'bg-success'
+                  ? 'bg-warning text-warning-foreground'
+                  : 'bg-success text-success-foreground'
               }`}
             >
               {criticalCount > 0 ? (

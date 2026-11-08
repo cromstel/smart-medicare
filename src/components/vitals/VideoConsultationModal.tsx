@@ -45,10 +45,10 @@ export const VideoConsultationModal: React.FC<VideoConsultationModalProps> = ({
   }
 
   const INITIAL_QUEUE: WaitingPatient[] = [
-    { id: '101', name: 'Emmanuel Mensah', triageLevel: 'ESI-2 Critical', triageColor: 'bg-destructive', waitTime: '08:42', status: 'Waiting' },
-    { id: '102', name: 'Abena Koomson', triageLevel: 'ESI-3 Urgent', triageColor: 'bg-warning', waitTime: '15:10', status: 'Waiting' },
-    { id: '103', name: 'Kofi Bako', triageLevel: 'ESI-4 Stable', triageColor: 'bg-success', waitTime: '02:15', status: 'Ready' },
-    { id: '104', name: 'Patricia Antwi', triageLevel: 'ESI-1 Resuscitation', triageColor: 'bg-destructive', waitTime: '22:30', status: 'Waiting' },
+    { id: '101', name: 'Emmanuel Mensah', triageLevel: 'ESI-2 Critical', triageColor: 'bg-destructive text-destructive-foreground', waitTime: '08:42', status: 'Waiting' },
+    { id: '102', name: 'Abena Koomson', triageLevel: 'ESI-3 Urgent', triageColor: 'bg-warning text-warning-foreground', waitTime: '15:10', status: 'Waiting' },
+    { id: '103', name: 'Kofi Bako', triageLevel: 'ESI-4 Stable', triageColor: 'bg-success text-success-foreground', waitTime: '02:15', status: 'Ready' },
+    { id: '104', name: 'Patricia Antwi', triageLevel: 'ESI-1 Resuscitation', triageColor: 'bg-destructive text-destructive-foreground', waitTime: '22:30', status: 'Waiting' },
   ];
 
   const [waitingQueue, setWaitingQueue] = useState<WaitingPatient[]>(INITIAL_QUEUE);
@@ -405,7 +405,7 @@ export const VideoConsultationModal: React.FC<VideoConsultationModalProps> = ({
                             <div className="space-y-1">
                               <div className="flex flex-wrap items-center gap-2">
                                 <span className="font-bold text-xs text-slate-200">{patient.name}</span>
-                                <span className={`text-[9px] px-1.5 py-0.5 rounded text-white font-extrabold uppercase tracking-wide ${patient.triageColor}`}>
+                                <span className={`text-[9px] px-1.5 py-0.5 rounded font-extrabold uppercase tracking-wide ${patient.triageColor}`}>
                                   {patient.triageLevel}
                                 </span>
                               </div>
@@ -477,7 +477,7 @@ export const VideoConsultationModal: React.FC<VideoConsultationModalProps> = ({
                       <div>Gateway: <strong className="text-success">Secure E2EE Peer-to-Peer</strong></div>
                     </div>
 
-                    <Button onClick={initiateWebRTC} className="w-full bg-accent hover:bg-accent text-white gap-2 font-semibold h-9 text-xs">
+                    <Button onClick={initiateWebRTC} className="w-full bg-accent hover:bg-accent text-accent-foreground gap-2 font-semibold h-9 text-xs">
                       <Play className="h-4 w-4" />
                       <span>Launch Consultation Link</span>
                     </Button>
@@ -651,7 +651,7 @@ export const VideoConsultationModal: React.FC<VideoConsultationModalProps> = ({
                   <Button 
                     size="icon" 
                     onClick={handleSendMessage}
-                    className="h-8 w-8 bg-accent hover:bg-accent text-white"
+                    className="h-8 w-8 bg-accent hover:bg-accent text-accent-foreground"
                   >
                     <Send className="h-3.5 w-3.5" />
                   </Button>
