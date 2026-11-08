@@ -1,4 +1,6 @@
-﻿2026-10-25 - Dependency remediation: root 24->0, server 19->0
+﻿2026-11-08 - Theme contrast audit: replace hardcoded text-white/text-black with semantic -foreground tokens on dynamic status backgrounds (CriticalVitalsAlertWidget, CriticalHealthAlertsSection, VideoConsultationModal triage badges, ShiftSchedulerModule, InventoryForecastingModule). All verification gates pass.
+
+2026-10-25 - Dependency remediation: root 24->0, server 19->0
 - Root and server npm audit now report 0 vulnerabilities. Root verify passes (exit 0); server verify unchanged (pre-existing env/DB failures).
 - Plan: docs/DEPENDENCY_REMEDIATION_PLAN.md (Phase 1 PR pending merge; Phase 2 Option A executed).
 
