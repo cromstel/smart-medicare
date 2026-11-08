@@ -195,10 +195,10 @@ export function CriticalHealthAlertsSection({
                 <Button
                   size="sm"
                   onClick={onOpenLogDialog}
-                  className={`h-8 text-xs font-semibold gap-1.5 shadow-sm text-white ${
+                  className={`h-8 text-xs font-semibold gap-1.5 shadow-sm ${
                     hasCritical
-                      ? 'bg-destructive hover:bg-destructive'
-                      : 'bg-warning hover:bg-warning'
+                      ? 'bg-destructive hover:bg-destructive text-destructive-foreground'
+                      : 'bg-warning hover:bg-warning text-warning-foreground'
                   }`}
                 >
                   <Plus className="h-3.5 w-3.5" />
