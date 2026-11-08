@@ -25,6 +25,13 @@ export function AppLayout() {
 
   return (
     <>
+      {/* Skip link: lets keyboard users bypass header + sidebar to reach main content. */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-[100] focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground focus:outline-none"
+      >
+        Skip to main content
+      </a>
       <ScrollProgress />
       <SidebarProvider defaultOpen>
       <div className="flex min-h-screen w-full bg-background transition-colors duration-300 ease-in-out">

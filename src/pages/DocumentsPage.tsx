@@ -289,7 +289,7 @@ const transformedData = data.map((doc: any) => ({
                 <div className="grid gap-4 py-4">
                   <div className="space-y-2">
                     <Label htmlFor="file">Select File</Label>
-                    <Input id="file" type="file" onChange={(e) => {
+                    <Input id="file" type="file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" onChange={(e) => {
                       const file = e.target.files?.[0] || null;
                       setNewDocument((prev) => ({ ...prev, file }));
                       if (file) {

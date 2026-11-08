@@ -90,7 +90,7 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar collapsible="icon" className="transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]">
+    <Sidebar collapsible="icon" className="transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]" role="navigation" aria-label="Main navigation">
       <SidebarHeader className="border-b border-sidebar-border p-4 transition-all duration-300">
         <div className="flex items-center gap-2">
           <Logo variant="sidebar" size="xs" />
