@@ -376,7 +376,7 @@ export default function LoginPage() {
               id="login-form"
             >
               <div className="space-y-2">
-                <Label htmlFor="email" className="sr-only">
+                <Label htmlFor="email" className="text-sm font-medium text-foreground">
                   Email address
                 </Label>
                 <div className="relative">
@@ -402,7 +402,7 @@ export default function LoginPage() {
                     <span>{errors.email.message}</span>
                   </p>
                 )}
-              </div>              <div className="space-y-2"><Label htmlFor="password" className="sr-only">Password</Label>
+              </div>              <div className="space-y-2"><Label htmlFor="password" className="text-sm font-medium text-foreground">Password</Label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <Lock className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
