@@ -82,6 +82,11 @@ e2e/
 *.njsproj
 *.sln
 *.sw?
+# Lighthouse audit reports — local-only performance artifacts
+lighthouse-*.json
+# Temp marker files
+qc
+stop
 # Local-only plans and notes
 todo/*
 todo-plan.md
