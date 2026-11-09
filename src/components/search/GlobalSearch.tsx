@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback, useId } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '@/services/api';
 import { Input } from '@/components/ui/input';
@@ -47,7 +47,6 @@ export function GlobalSearch() {
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
-  const listboxId = useId();
 
   // Handle outside click to close dropdown
   useEffect(() => {
@@ -284,10 +283,9 @@ export function GlobalSearch() {
             }
           }}
           onKeyDown={handleKeyDown}
-          aria-expanded={isOpen}
-          aria-controls={listboxId}
+          aria-controls={isOpen ? 'global-search-listbox' : undefined}
           aria-activedescendant={
-            results[selectedIndex] ? `${listboxId}-${results[selectedIndex].id}` : undefined
+            results[selectedIndex] && isOpen ? `global-search-listbox-${results[selectedIndex].id}` : undefined
           }
           className="pl-9 pr-16 h-9 bg-background border-border text-sm placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-accent"
         />
@@ -318,7 +316,7 @@ export function GlobalSearch() {
       {isOpen && (
         <div
           role="listbox"
-          id={listboxId}
+          id="global-search-listbox"
           aria-label="Search results"
           className="absolute left-0 right-0 top-full mt-2 z-50 max-h-[480px] overflow-y-auto rounded-lg border border-border bg-card shadow-2xl p-2 animate-in fade-in-0 zoom-in-95 duration-100"
         >
@@ -350,7 +348,7 @@ export function GlobalSearch() {
                       return (
                         <div
                           key={item.id}
-                          id={`${listboxId}-${item.id}`}
+                          id={`global-search-listbox-${item.id}`}
                           role="option"
                           aria-selected={isSelected}
                           tabIndex={isSelected ? 0 : -1}
@@ -403,7 +401,7 @@ export function GlobalSearch() {
                       return (
                         <div
                           key={item.id}
-                          id={`${listboxId}-${item.id}`}
+                          id={`global-search-listbox-${item.id}`}
                           role="option"
                           aria-selected={isSelected}
                           tabIndex={isSelected ? 0 : -1}
@@ -456,7 +454,7 @@ export function GlobalSearch() {
                       return (
                         <div
                           key={item.id}
-                          id={`${listboxId}-${item.id}`}
+                          id={`global-search-listbox-${item.id}`}
                           role="option"
                           aria-selected={isSelected}
                           tabIndex={isSelected ? 0 : -1}
@@ -509,7 +507,7 @@ export function GlobalSearch() {
                       return (
                         <div
                           key={item.id}
-                          id={`${listboxId}-${item.id}`}
+                          id={`global-search-listbox-${item.id}`}
                           role="option"
                           aria-selected={isSelected}
                           tabIndex={isSelected ? 0 : -1}

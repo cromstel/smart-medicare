@@ -538,7 +538,7 @@ function Testimonials() {
               transition={{ duration: 0.5, delay: i * 0.1 }}
             >
               {/* Stars */}
-              <div className="flex gap-0.5 mb-4" aria-label={`5 out of 5 stars`}>
+              <div className="flex gap-0.5 mb-4" role="img" aria-label="5 out of 5 stars">
                 {Array.from({ length: 5 }).map((_, si) => (
                   <Star key={si} className="h-4 w-4 fill-accent text-accent" aria-hidden="true" />
                 ))}
