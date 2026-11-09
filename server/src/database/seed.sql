@@ -64,7 +64,12 @@ INSERT INTO roles (id, name, description) VALUES
 (5, 'nurse', 'Registered nurse with clinical care access'),
 (6, 'pharmacist', 'Pharmacist with medication-management access'),
 (7, 'lab_technician', 'Laboratory technician with lab result access'),
-(8, 'hospital_management', 'Hospital management with administrative oversight');
+(8, 'hospital_management', 'Hospital management with administrative oversight'),
+(9, 'receptionist', 'Front desk receptionist for patient check-in and scheduling'),
+(10, 'billing_specialist', 'Billing specialist for invoicing and payment processing'),
+(11, 'insurance_coordinator', 'Insurance coordinator for claims and verification'),
+(12, 'medical_records_clerk', 'Medical records clerk for records management'),
+(13, 'radiology_technician', 'Radiology technician for imaging orders and results');
 
 -- 2. Seed Permissions for Roles
 -- Super Admin permissions (role_id = 1)
@@ -147,6 +152,44 @@ INSERT INTO permissions (role_id, module, can_view, can_add, can_edit, can_delet
 (8, 'reports', 1, 1, 1, 0),
 (8, 'settings', 1, 0, 1, 0);
 
+-- Receptionist permissions (role_id = 9)
+-- Front desk receptionist for patient check-in, scheduling, and registration
+INSERT INTO permissions (role_id, module, can_view, can_add, can_edit, can_delete) VALUES
+(9, 'patients', 1, 1, 1, 0),
+(9, 'appointments', 1, 1, 1, 0),
+(9, 'dashboard', 1, 0, 0, 0);
+
+-- Billing Specialist permissions (role_id = 10)
+-- Billing specialist for invoicing, payment processing, and financial records
+INSERT INTO permissions (role_id, module, can_view, can_add, can_edit, can_delete) VALUES
+(10, 'finance', 1, 1, 1, 0),
+(10, 'financial', 1, 1, 1, 0),
+(10, 'patients', 1, 1, 0, 0),
+(10, 'appointments', 1, 0, 0, 0);
+
+-- Insurance Coordinator permissions (role_id = 11)
+-- Insurance coordinator for claims, verification, and insurance processing
+INSERT INTO permissions (role_id, module, can_view, can_add, can_edit, can_delete) VALUES
+(11, 'patients', 1, 1, 1, 0),
+(11, 'appointments', 1, 1, 0, 0),
+(11, 'finance', 1, 1, 1, 0),
+(11, 'insurance', 1, 1, 1, 0);
+
+-- Medical Records Clerk permissions (role_id = 12)
+-- Medical records clerk for records management and documentation
+INSERT INTO permissions (role_id, module, can_view, can_add, can_edit, can_delete) VALUES
+(12, 'patients', 1, 1, 1, 0),
+(12, 'documents', 1, 1, 1, 0),
+(12, 'medical_history', 1, 1, 1, 0);
+
+-- Radiology Technician permissions (role_id = 13)
+-- Radiology technician for imaging orders, results, and scheduling
+INSERT INTO permissions (role_id, module, can_view, can_add, can_edit, can_delete) VALUES
+(13, 'patients', 1, 0, 0, 0),
+(13, 'radiology', 1, 1, 1, 0),
+(13, 'radiology_orders', 1, 1, 1, 0),
+(13, 'medical_history', 1, 0, 0, 0);
+
 -- 3. Seed Hospitals
 -- Ordered by dependency: roles, then permissions, then hospitals and
 -- departments, then users. users.hospital_id and users.department_id both
@@ -170,7 +213,10 @@ INSERT INTO departments (id, hospital_id, name, head_of_department) VALUES
 -- (`npm run db:setup` in server/) generates a bcrypt hash for each account
 -- from the password configured in the environment -- SEED_SUPER_ADMIN_PASSWORD,
 -- SEED_ADMIN_PASSWORD, SEED_DOCTOR_PASSWORD, SEED_PATIENT_PASSWORD,
--- SEED_NURSE_PASSWORD and SEED_PHARMACIST_PASSWORD -- and
+-- SEED_NURSE_PASSWORD, SEED_PHARMACIST_PASSWORD, SEED_LAB_TECHNICIAN_PASSWORD,
+-- SEED_HOSPITAL_MANAGEMENT_PASSWORD, SEED_RECEPTIONIST_PASSWORD,
+-- SEED_BILLING_SPECIALIST_PASSWORD, SEED_INSURANCE_COORDINATOR_PASSWORD,
+-- SEED_MEDICAL_RECORDS_CLERK_PASSWORD, SEED_RADIOLOGY_TECHNICIAN_PASSWORD -- and
 -- substitutes it here. Nothing about a credential is written in the
 -- repository, and no hash is shared between accounts or deployments.
 --
@@ -207,7 +253,15 @@ INSERT INTO users (id, role_id, email, password, name, totp_secret, hospital_id,
 -- Lab technician and Hospital Management: the remaining roles.
 -- Both are enrolled with two-factor (totp_secret set) so their MFA path is exercisable.
 (7, 7, 'labtech@smarthealth.com', '${SEED_LAB_TECHNICIAN_PASSWORD_HASH}', 'Lab Technician', 'GEZDGNBVGY3TQOJQ', 1, 1),
-(8, 8, 'mgmt@smarthealth.com', '${SEED_HOSPITAL_MANAGEMENT_PASSWORD_HASH}', 'Hospital Manager', 'GEZDGNBVGY3TQOJQ', 1, 1);
+(8, 8, 'mgmt@smarthealth.com', '${SEED_HOSPITAL_MANAGEMENT_PASSWORD_HASH}', 'Hospital Manager', 'GEZDGNBVGY3TQOJQ', 1, 1),
+
+-- Receptionist, Billing Specialist, Insurance Coordinator, Medical Records Clerk, Radiology Technician:
+-- New roles with their own MFA secrets for testing.
+(9, 9, 'receptionist@smarthealth.com', '${SEED_RECEPTIONIST_PASSWORD_HASH}', 'Receptionist', 'GEZDGNBVGY3TQOJQ', 1, 1),
+(10, 10, 'billing@smarthealth.com', '${SEED_BILLING_SPECIALIST_PASSWORD_HASH}', 'Billing Specialist', 'GEZDGNBVGY3TQOJQ', 1, 1),
+(11, 11, 'insurance@smarthealth.com', '${SEED_INSURANCE_COORDINATOR_PASSWORD_HASH}', 'Insurance Coordinator', 'GEZDGNBVGY3TQOJQ', 1, 1),
+(12, 12, 'records@smarthealth.com', '${SEED_MEDICAL_RECORDS_CLERK_PASSWORD_HASH}', 'Medical Records Clerk', 'GEZDGNBVGY3TQOJQ', 1, 1),
+(13, 13, 'radiology@smarthealth.com', '${SEED_RADIOLOGY_TECHNICIAN_PASSWORD_HASH}', 'Radiology Technician', 'GEZDGNBVGY3TQOJQ', 1, 1);
 
 -- 6. Seed Staff
 INSERT INTO staff (id, staff_id, user_id, first_name, last_name, role, department_id, hospital_id, email, phone, join_date) VALUES

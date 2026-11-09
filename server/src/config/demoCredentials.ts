@@ -17,6 +17,11 @@
  *   SEED_PHARMACIST_PASSWORD         the seeded pharmacist
  *   SEED_LAB_TECHNICIAN_PASSWORD     the seeded lab technician
  *   SEED_HOSPITAL_MANAGEMENT_PASSWORD the seeded hospital manager
+ *   SEED_RECEPTIONIST_PASSWORD       the seeded receptionist
+ *   SEED_BILLING_SPECIALIST_PASSWORD the seeded billing specialist
+ *   SEED_INSURANCE_COORDINATOR_PASSWORD the seeded insurance coordinator
+ *   SEED_MEDICAL_RECORDS_CLERK_PASSWORD the seeded medical records clerk
+ *   SEED_RADIOLOGY_TECHNICIAN_PASSWORD the seeded radiology technician
  *
  * The seed runner hashes whatever these resolve to and substitutes the hashes
  * into the seed file, so no hash and no password is stored in the repository.
@@ -30,7 +35,7 @@
  */
 
 /** The demo accounts the local seed creates. */
-export type DemoAccountId = 'superAdmin' | 'admin' | 'doctor' | 'patient' | 'nurse' | 'pharmacist' | 'labTechnician' | 'hospitalManagement';
+export type DemoAccountId = 'superAdmin' | 'admin' | 'doctor' | 'patient' | 'nurse' | 'pharmacist' | 'labTechnician' | 'hospitalManagement' | 'receptionist' | 'billingSpecialist' | 'insuranceCoordinator' | 'medicalRecordsClerk' | 'radiologyTechnician';
 
 export interface DemoAccount {
   /** Identifier used to look the account up in the resolved credential map. */
@@ -91,6 +96,36 @@ export const DEMO_ACCOUNTS: readonly DemoAccount[] = [
     envVar: 'SEED_HOSPITAL_MANAGEMENT_PASSWORD',
     aliasEnvVars: ['HOSPITAL_MANAGEMENT_PASSWORD'],
     hashPlaceholder: 'SEED_HOSPITAL_MANAGEMENT_PASSWORD_HASH',
+  },
+  {
+    id: 'receptionist',
+    envVar: 'SEED_RECEPTIONIST_PASSWORD',
+    aliasEnvVars: ['RECEPTIONIST_PASSWORD'],
+    hashPlaceholder: 'SEED_RECEPTIONIST_PASSWORD_HASH',
+  },
+  {
+    id: 'billingSpecialist',
+    envVar: 'SEED_BILLING_SPECIALIST_PASSWORD',
+    aliasEnvVars: ['BILLING_SPECIALIST_PASSWORD'],
+    hashPlaceholder: 'SEED_BILLING_SPECIALIST_PASSWORD_HASH',
+  },
+  {
+    id: 'insuranceCoordinator',
+    envVar: 'SEED_INSURANCE_COORDINATOR_PASSWORD',
+    aliasEnvVars: ['INSURANCE_COORDINATOR_PASSWORD'],
+    hashPlaceholder: 'SEED_INSURANCE_COORDINATOR_PASSWORD_HASH',
+  },
+  {
+    id: 'medicalRecordsClerk',
+    envVar: 'SEED_MEDICAL_RECORDS_CLERK_PASSWORD',
+    aliasEnvVars: ['MEDICAL_RECORDS_CLERK_PASSWORD'],
+    hashPlaceholder: 'SEED_MEDICAL_RECORDS_CLERK_PASSWORD_HASH',
+  },
+  {
+    id: 'radiologyTechnician',
+    envVar: 'SEED_RADIOLOGY_TECHNICIAN_PASSWORD',
+    aliasEnvVars: ['RADIOLOGY_TECHNICIAN_PASSWORD'],
+    hashPlaceholder: 'SEED_RADIOLOGY_TECHNICIAN_PASSWORD_HASH',
   },
 ];
 
