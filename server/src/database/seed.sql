@@ -62,7 +62,9 @@ INSERT INTO roles (id, name, description) VALUES
 (3, 'doctor', 'Medical doctor with access to patient data'),
 (4, 'patient', 'Patient with access to their own data'),
 (5, 'nurse', 'Registered nurse with clinical care access'),
-(6, 'pharmacist', 'Pharmacist with medication-management access');
+(6, 'pharmacist', 'Pharmacist with medication-management access'),
+(7, 'lab_technician', 'Laboratory technician with lab result access'),
+(8, 'hospital_management', 'Hospital management with administrative oversight');
 
 -- 2. Seed Permissions for Roles
 -- Super Admin permissions (role_id = 1)
@@ -123,6 +125,28 @@ INSERT INTO permissions (role_id, module, can_view, can_add, can_edit, can_delet
 (6, 'pharmacy', 1, 1, 1, 0),
 (6, 'inventory', 1, 1, 1, 0);
 
+-- Lab Technician permissions (role_id = 7)
+-- Lab technicians can view and add lab results, view patient info needed for lab work
+INSERT INTO permissions (role_id, module, can_view, can_add, can_edit, can_delete) VALUES
+(7, 'patients', 1, 0, 0, 0),
+(7, 'lab_results', 1, 1, 1, 0),
+(7, 'lab_orders', 1, 1, 1, 0),
+(7, 'medical_history', 1, 0, 0, 0);
+
+-- Hospital Management permissions (role_id = 8)
+-- Hospital management has administrative oversight, can view most things but limited editing
+INSERT INTO permissions (role_id, module, can_view, can_add, can_edit, can_delete) VALUES
+(8, 'dashboard', 1, 0, 0, 0),
+(8, 'hospitals', 1, 1, 1, 0),
+(8, 'departments', 1, 1, 1, 0),
+(8, 'staff', 1, 1, 1, 0),
+(8, 'patients', 1, 1, 0, 0),
+(8, 'appointments', 1, 1, 1, 0),
+(8, 'finance', 1, 1, 1, 0),
+(8, 'financial', 1, 1, 1, 0),
+(8, 'reports', 1, 1, 1, 0),
+(8, 'settings', 1, 0, 1, 0);
+
 -- 3. Seed Hospitals
 -- Ordered by dependency: roles, then permissions, then hospitals and
 -- departments, then users. users.hospital_id and users.department_id both
@@ -178,7 +202,12 @@ INSERT INTO users (id, role_id, email, password, name, totp_secret, hospital_id,
 -- two-factor (totp_secret set) so their MFA path is exercisable out of the box,
 -- matching the doctor and patient accounts.
 (5, 5, 'nurse@smarthealth.com', '${SEED_NURSE_PASSWORD_HASH}', 'Nurse Johnson', 'GEZDGNBVGY3TQOJQ', 1, 1),
-(6, 6, 'pharmacist@smarthealth.com', '${SEED_PHARMACIST_PASSWORD_HASH}', 'Pharmacist Lee', 'GEZDGNBVGY3TQOJQ', 1, NULL);
+(6, 6, 'pharmacist@smarthealth.com', '${SEED_PHARMACIST_PASSWORD_HASH}', 'Pharmacist Lee', 'GEZDGNBVGY3TQOJQ', 1, NULL),
+
+-- Lab technician and Hospital Management: the remaining roles.
+-- Both are enrolled with two-factor (totp_secret set) so their MFA path is exercisable.
+(7, 7, 'labtech@smarthealth.com', '${SEED_LAB_TECHNICIAN_PASSWORD_HASH}', 'Lab Technician', 'GEZDGNBVGY3TQOJQ', 1, 1),
+(8, 8, 'mgmt@smarthealth.com', '${SEED_HOSPITAL_MANAGEMENT_PASSWORD_HASH}', 'Hospital Manager', 'GEZDGNBVGY3TQOJQ', 1, 1);
 
 -- 6. Seed Staff
 INSERT INTO staff (id, staff_id, user_id, first_name, last_name, role, department_id, hospital_id, email, phone, join_date) VALUES
@@ -187,7 +216,9 @@ INSERT INTO staff (id, staff_id, user_id, first_name, last_name, role, departmen
 -- the role to send back.
 (1, 'STAFF-001', 3, 'John', 'Smith', 'doctor', 1, 1, 'doctor@smarthealth.com', '555-5678', '2022-01-15'),
 (2, 'STAFF-002', 5, 'Nurse', 'Johnson', 'nurse', 1, 1, 'nurse@smarthealth.com', '555-5679', '2022-02-01'),
-(3, 'STAFF-003', 6, 'Pharmacist', 'Lee', 'pharmacist', 1, 1, 'pharmacist@smarthealth.com', '555-5680', '2022-02-01');
+(3, 'STAFF-003', 6, 'Pharmacist', 'Lee', 'pharmacist', 1, 1, 'pharmacist@smarthealth.com', '555-5680', '2022-02-01'),
+(4, 'STAFF-004', 7, 'Lab', 'Technician', 'lab_technician', 1, 1, 'labtech@smarthealth.com', '555-5681', '2022-03-01'),
+(5, 'STAFF-005', 8, 'Hospital', 'Manager', 'hospital_management', 1, 1, 'mgmt@smarthealth.com', '555-5682', '2022-03-01');
 
 -- 7. Seed Patients
 INSERT INTO patients (id, patient_id, first_name, last_name, age, gender, phone, email, address, hospital_id, last_visit) VALUES
