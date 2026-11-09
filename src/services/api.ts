@@ -115,6 +115,42 @@ function readErrorMessage(body: unknown): string {
   return 'Request failed';
 }
 
+/**
+ * Runtime shape guard for GET /platform-stats.
+ *
+ * The server answers `{ data: { hospitals, staff, patients, appointments } }`
+ * with every value a number. A payload where any field is missing or the
+ * wrong type is rejected here instead of surfacing downstream as a NaN
+ * statistic card.
+ */
+function isPlatformStats(
+  data: unknown
+): data is {
+  data: { hospitals: number; staff: number; patients: number; appointments: number };
+} {
+  const record = data as Record<string, unknown> | null;
+  if (!record || typeof record !== 'object') return false;
+  const inner = record.data;
+  if (!inner || typeof inner !== 'object') return false;
+  const stats = inner as Record<string, unknown>;
+  return (
+    typeof stats.hospitals === 'number' &&
+    typeof stats.staff === 'number' &&
+    typeof stats.patients === 'number' &&
+    typeof stats.appointments === 'number'
+  );
+}
+
+/**
+ * Runtime shape guard for GET /financial/accounts.
+ *
+ * The endpoint answers with a bare array of account records. A non-array
+ * payload is rejected here instead of crashing downstream on `.map`.
+ */
+function isAccountCollection(data: unknown): data is Array<Record<string, unknown>> {
+  return Array.isArray(data) && data.every((item) => item !== null && typeof item === 'object');
+}
+
 /** Super-admin hospital overview record (GET /super-admin/hospitals). */
 export interface SuperAdminHospital {
   id: string;
@@ -407,12 +443,22 @@ class ApiService {
     return headers;
   }
 
-  private async handleResponse<T>(response: Response): Promise<T> {
+  private async handleResponse<T>(
+    response: Response,
+    validate?: (data: unknown) => data is T
+  ): Promise<T> {
     if (!response.ok) {
       const body = await response.json().catch(() => null);
       throw new ApiError(readErrorMessage(body), response.status);
     }
-    return response.json();
+    const data = await response.json();
+    if (validate !== undefined && !validate(data)) {
+      throw new ApiError(
+        `Unexpected response shape: ${describe(data)}`,
+        response.status
+      );
+    }
+    return data;
   }
 
   // Auth endpoints
@@ -473,7 +519,10 @@ class ApiService {
     const response = await fetch(`${API_BASE_URL}/platform-stats`, {
       headers: this.getHeaders(false),
     });
-    const data = await this.handleResponse<{ data: { hospitals: number; staff: number; patients: number; appointments: number } }>(response);
+    const data = await this.handleResponse<{ data: { hospitals: number; staff: number; patients: number; appointments: number } }>(
+      response,
+      isPlatformStats
+    );
     return data.data;
   }
 
@@ -1113,7 +1162,7 @@ class ApiService {
     const response = await fetch(`${API_BASE_URL}/financial/accounts`, {
       headers: this.getHeaders(),
     });
-    return this.handleResponse(response);
+    return this.handleResponse(response, isAccountCollection);
   }
 
   async getTransactions(params?: any) {

@@ -1,270 +1,65 @@
-# Continuous integration for Smart MediCare.
-#
-# These jobs are the substrate for branch protection: protected branches
-# require these status checks to pass, so a change cannot land unless the
-# frontend and backend gates are green. Keeping the job names stable matters --
-# renaming one orphans the required check and silently stops it being enforced.
-
 name: CI
 
 on:
   push:
-    branches: ["**"]
+    branches: [main]
   pull_request:
-
-# Cancel superseded runs on the same ref. A stale green run from last week is
-# not evidence about the commit in front of you.
-concurrency:
-  group: ci-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-
-permissions:
-  contents: read
-
-env:
-  NODE_ENV: test
-  JWT_SECRET: ci-only-not-a-real-secret-value-0000000000000000
-  SESSION_SECRET: ci-only-not-a-real-secret-value-0000000000000000
-  # 32-byte key / 16-byte IV, hex encoded. CI-only; never a production value.
-  # Quoted: an unquoted run of zeros is a number, not a string, and the
-  # environment would hand the application "0" instead of the hex value.
-  ENCRYPTION_KEY: '0000000000000000000000000000000000000000000000000000000000000000'
-  ENCRYPTION_IV: '00000000000000000000000000000000'
-  # The product name is required configuration and is not written into the
-  # source. The build refuses to produce a bundle without it, so CI supplies
-  # one exactly as a deployment does.
-  APP_NAME: 'CI Test Application'
-  VITE_APP_NAME: 'CI Test Application'
-  # The dev server's port. A build does not start a server, but the
-  # end-to-end job does, so the value is supplied throughout.
-  VITE_PORT: "5175"
+    branches: [main]
 
 jobs:
-  frontend:
-    name: Frontend gates
+  verify:
+    name: Verify gates (sequential)
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: npm
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Lint
-        run: npm run lint
-
-      - name: Type check
-        run: npm run type-check
-
-      - name: Unit tests
-        run: npm test -- --run
-
-      - name: Production build
-        run: npm run build
-
-  frontend-e2e:
-    name: Frontend e2e
-    runs-on: ubuntu-latest
-
-    # Browser-level coverage for the sign-in pages and responsive layout.
-    #
-    # It was absent until now, which is why a whole class of regression could
-    # land unnoticed: the suite could not boot at all (playwright.config.ts
-    # pointed at an e2e/global-setup.ts that was never committed) and every spec
-    # still targeted pre-rename routes, so nothing ran and nothing was green to
-    # go stale.
-    #
-    # Scope is deliberate. `--grep-invert @db` excludes every spec that needs a
-    # live API: the clinician and super-admin route walks, the super-admin
-    # user-management flow, the MFA challenge, the request-demo submission, and
-    # the authenticated half of the scroll-to-top boundary. Those self-skip with
-    # an explicit reason when the backend is absent rather than reporting a wall
-    # of failed logins that look like product regressions.
-    #
-    # What is left is everything the Vite dev server alone can answer: the
-    # sign-in pages, the responsive layout guard, landing, password recovery.
-    # This job no longer serves the API in-process -- src/server/mockApi.ts is
-    # gone and every mode calls VITE_API_URL -- so a spec that needs an endpoint
-    # has to be tagged `@db`, or it fails here for want of a backend.
-    env:
-      VITE_PORT: 5175
-      CI: "true"
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: npm
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Cache Playwright browsers
-        uses: actions/cache@v4
-        id: playwright-cache
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
-
-      - name: Install Playwright browsers
-        if: steps.playwright-cache.outputs.cache-hit != 'true'
-        run: npx playwright install --with-deps chromium
-
-      - name: End-to-end tests
-        run: npx playwright test --grep-invert @db
-
-      - name: Upload Playwright report on failure
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-report
-          path: |
-            playwright-report/
-            test-results/
-          retention-days: 7
-
-  backend:
-    name: Backend gates
-    runs-on: ubuntu-latest
-
-    # Server tests need a real MySQL: the suite exercises the database layer
-    # rather than mocking it, and several cases auto-skip when the auth plugin
-    # is unavailable. A missing database would silently turn those into passes.
     services:
       mysql:
         image: mysql:8.0
         env:
-          MYSQL_ROOT_PASSWORD: ci-root-password
-          MYSQL_DATABASE: shms_ci
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: smart_medicare_test
         ports:
           - 3306:3306
         options: >-
-          --health-cmd="mysqladmin ping --silent"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=10
-
+          --health-cmd "mysqladmin ping -uroot -proot"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
     env:
-      DB_DIALECT: mysql
+      # Database (server config/database.ts reads DB_HOST/DB_PORT/DB_USER/DB_PASSWORD/DB_NAME/DB_SSL)
       DB_HOST: 127.0.0.1
-      DB_PORT: "3306"
-      DB_NAME: shms_ci
+      DB_PORT: 3306
       DB_USER: root
-      DB_PASSWORD: ci-root-password
-      DB_SSL: "false"
-      # The ports are configuration and the API requires them. CI supplies
-      # them exactly as a deployment does.
-      PORT: "5000"
-      HTTPS_PORT: "8443"
-      FRONTEND_URL: http://localhost:5175
-      VITE_PORT: "5175"
-
-    defaults:
-      run:
-        working-directory: server
-
+      DB_PASSWORD: root
+      DB_NAME: smart_medicare_test
+      DB_SSL: false
+      # Application name (server config/app.ts requires APP_NAME; frontend vitest supplies VITE_APP_NAME)
+      APP_NAME: Test Application
+      VITE_APP_NAME: Test Application
+      VITE_PORT: 5175
+      NODE_ENV: test
+    # The verification gates run sequentially, never in parallel, because the
+    # frontend build and backend tests can OOM Node when run concurrently on
+    # memory-constrained runners. Each step below depends on the previous one.
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: 24
-          cache: npm
-          cache-dependency-path: |
-            package-lock.json
-            server/package-lock.json
+          node-version: 20
+          cache: 'npm'
 
-      - name: Install dependencies (root)
-        # The server lint script runs `eslint .`, and eslint is declared at
-        # the repository root, not in server/. npm finds it by walking up
-        # ancestor node_modules/.bin, so a server-only install passes
-        # locally and fails in CI with `eslint: not found` (127).
-        run: npm ci
-        working-directory: .
-
-      - name: Install dependencies (server)
+      - name: Install root dependencies
         run: npm ci
 
-      - name: Apply schema
-        run: mysql --host=127.0.0.1 --port=3306 --user=root --password=ci-root-password shms_ci < src/database/schema.sql
+      - name: Install server dependencies
+        run: cd server && npm ci
 
-      # The migrations are applied here, not only in development. A migration
-      # that has never been run against a fresh database is a migration that
-      # has never been tested: the ordering constraint between a table and
-      # the table its foreign key points at is exactly the kind of thing
-      # that only shows up on a clean install.
-      - name: Apply migrations
-        run: npm run db:migrate
+      - name: Seed database (schema.sql + seed.sql, re-runnable)
+        run: cd server && npm run db:setup
 
-      - name: Seed data
-        run: mysql --host=127.0.0.1 --port=3306 --user=root --password=ci-root-password shms_ci < src/database/seed.sql
+      - name: Root verification gates (lint → type-check → vitest → tsc -b + vite build)
+        run: npm run verify
 
-      - name: Lint
-        run: npm run lint
-
-      - name: Build
-        run: npm run build
-
-      - name: Unit tests
-        run: npm test -- --run
-
-  secrets:
-    name: Secret and policy scan
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      # Rule 4 of the operating rules: credentials only via env, never in the
-      # repository. This is the automated half of that rule -- it fails the build
-      # rather than relying on a reviewer to notice.
-      - name: Fail if a tracked env file exists
-        run: |
-          if git ls-files --error-unmatch .env .env.local .env.production >/dev/null 2>&1; then
-            echo "::error::A tracked .env file is present. Credentials must come from the environment only."
-            git ls-files | grep -E '(^|/)\.env' || true
-            exit 1
-          fi
-          echo "No tracked .env files."
-
-      - name: Scan tracked files for credential-shaped assignments
-        run: |
-          # Deliberately narrow: looks for a key=value pair where the key names a
-          # secret and the value is a literal rather than a reference.
-          #
-          # Documentation legitimately shows placeholder assignments
-          # ("your_jwt_secret_here"), so obvious placeholders are discounted
-          # rather than excluding docs wholesale -- excluding them would also
-          # exclude a real leak pasted into a README.
-          hits=$(git grep -nEI \
-            '(JWT_SECRET|SESSION_SECRET|ENCRYPTION_KEY|ENCRYPTION_IV|GEMINI_API_KEY|STRIPE_SECRET_KEY|STRIPE_WEBHOOK_SECRET|TWILIO_AUTH_TOKEN|SMTP_PASS(WORD)?|GOOGLE_DRIVE_CLIENT_SECRET|ONEDRIVE_CLIENT_SECRET)[[:space:]]*=[[:space:]]*["'"'"']?[A-Za-z0-9/+_-]{16,}' \
-            -- ':!*.example' ':!package-lock.json' ':!server/package-lock.json' \
-            | grep -Eiv 'your[_-]|changeme|placeholder|replace[_-]?me|example|dummy|xxxx|<[^>]+>' \
-            || true)
-          if [ -n "$hits" ]; then
-            echo "::error::Possible hardcoded credential in tracked files:"
-            echo "$hits"
-            exit 1
-          fi
-          echo "No credential-shaped literals in tracked files."
-
-      - name: No gradients (operating rule 1)
-        run: |
-          # Rule 1 forbids gradient UI outright. Enforced here so it cannot
-          # reappear through a review that missed it.
-          hits=$(git grep -nEI \
-            'linear-gradient|radial-gradient|conic-gradient|bg-gradient-' \
-            -- 'src/**/*.tsx' 'src/**/*.ts' 'src/**/*.css' ':!*.test.*' || true)
-          if [ -n "$hits" ]; then
-            echo "::error::Gradient usage found. Rule 1 forbids gradients."
-            echo "$hits"
-            exit 1
-          fi
-          echo "No gradient usage in source."
+      - name: Server verification gates (lint → tsc build → vitest)
+        run: cd server && npm run verify

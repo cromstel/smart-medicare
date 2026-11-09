@@ -145,7 +145,8 @@ INSERT INTO departments (id, hospital_id, name, head_of_department) VALUES
 -- The password column holds a PLACEHOLDER, not a hash. The seed runner
 -- (`npm run db:setup` in server/) generates a bcrypt hash for each account
 -- from the password configured in the environment -- SEED_SUPER_ADMIN_PASSWORD,
--- SEED_ADMIN_PASSWORD, SEED_DOCTOR_PASSWORD and SEED_PATIENT_PASSWORD -- and
+-- SEED_ADMIN_PASSWORD, SEED_DOCTOR_PASSWORD, SEED_PATIENT_PASSWORD,
+-- SEED_NURSE_PASSWORD and SEED_PHARMACIST_PASSWORD -- and
 -- substitutes it here. Nothing about a credential is written in the
 -- repository, and no hash is shared between accounts or deployments.
 --
@@ -172,14 +173,21 @@ INSERT INTO users (id, role_id, email, password, name, totp_secret, hospital_id,
 (1, 1, 'superadmin@smarthealth.com', '${SEED_SUPER_ADMIN_PASSWORD_HASH}', 'Super Admin', NULL, 1, NULL), -- two-factor NOT enrolled by default
 (2, 2, 'admin@smarthealth.com', '${SEED_ADMIN_PASSWORD_HASH}', 'Admin User', NULL, 1, 1), -- two-factor NOT enrolled by default
 (3, 3, 'doctor@smarthealth.com', '${SEED_DOCTOR_PASSWORD_HASH}', 'Dr. Smith', 'GEZDGNBVGY3TQOJQ', 1, 1),
-(4, 4, 'patient@smarthealth.com', '${SEED_PATIENT_PASSWORD_HASH}', 'John Doe', 'GEZDGNBVGY3TQOJQ', 1, NULL);
+(4, 4, 'patient@smarthealth.com', '${SEED_PATIENT_PASSWORD_HASH}', 'John Doe', 'GEZDGNBVGY3TQOJQ', 1, NULL),
+-- Nurse and pharmacist: the remaining clinical roles. Both are enrolled with
+-- two-factor (totp_secret set) so their MFA path is exercisable out of the box,
+-- matching the doctor and patient accounts.
+(5, 5, 'nurse@smarthealth.com', '${SEED_NURSE_PASSWORD_HASH}', 'Nurse Johnson', 'GEZDGNBVGY3TQOJQ', 1, 1),
+(6, 6, 'pharmacist@smarthealth.com', '${SEED_PHARMACIST_PASSWORD_HASH}', 'Pharmacist Lee', 'GEZDGNBVGY3TQOJQ', 1, NULL);
 
 -- 6. Seed Staff
 INSERT INTO staff (id, staff_id, user_id, first_name, last_name, role, department_id, hospital_id, email, phone, join_date) VALUES
 -- The role holds the role NAME, and the names in `roles` are lowercase. A
 -- capitalised value here matched no role, so the staff editor could not find
 -- the role to send back.
-(1, 'STAFF-001', 3, 'John', 'Smith', 'doctor', 1, 1, 'doctor@smarthealth.com', '555-5678', '2022-01-15');
+(1, 'STAFF-001', 3, 'John', 'Smith', 'doctor', 1, 1, 'doctor@smarthealth.com', '555-5678', '2022-01-15'),
+(2, 'STAFF-002', 5, 'Nurse', 'Johnson', 'nurse', 1, 1, 'nurse@smarthealth.com', '555-5679', '2022-02-01'),
+(3, 'STAFF-003', 6, 'Pharmacist', 'Lee', 'pharmacist', 1, 1, 'pharmacist@smarthealth.com', '555-5680', '2022-02-01');
 
 -- 7. Seed Patients
 INSERT INTO patients (id, patient_id, first_name, last_name, age, gender, phone, email, address, hospital_id, last_visit) VALUES

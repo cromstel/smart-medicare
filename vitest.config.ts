@@ -26,10 +26,9 @@ export default defineConfig({
     // while absorbing loaded-machine jitter.
     testTimeout: 20000,
     hookTimeout: 20000,
-    include: ['src/tests/**/*.test.tsx', 'src/tests/**/*.test.ts', 'src/components/ui/**/*.test.tsx', 'src/pages/**/*.test.tsx', 'src/components/layout/**/*.test.tsx'],
+    include: ['src/tests/**/*.test.tsx', 'src/tests/**/*.test.ts', 'src/components/ui/**/*.test.tsx', 'src/pages/**/*.test.tsx', 'src/components/layout/**/*.test.tsx', 'src/services/**/*.test.ts'],
     exclude: [
       'server/**',
-      'src/services/api.security.test.ts',
       'src/tests/pages/PharmacyPage.test.tsx',
     ],
     coverage: {

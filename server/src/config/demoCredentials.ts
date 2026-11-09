@@ -13,6 +13,8 @@
  *   SEED_ADMIN_PASSWORD         the seeded hospital administrator
  *   SEED_DOCTOR_PASSWORD        the seeded clinician
  *   SEED_PATIENT_PASSWORD       the seeded patient
+ *   SEED_NURSE_PASSWORD         the seeded nurse
+ *   SEED_PHARMACIST_PASSWORD    the seeded pharmacist
  *
  * The seed runner hashes whatever these resolve to and substitutes the hashes
  * into the seed file, so no hash and no password is stored in the repository.
@@ -26,7 +28,7 @@
  */
 
 /** The demo accounts the local seed creates. */
-export type DemoAccountId = 'superAdmin' | 'admin' | 'doctor' | 'patient';
+export type DemoAccountId = 'superAdmin' | 'admin' | 'doctor' | 'patient' | 'nurse' | 'pharmacist';
 
 export interface DemoAccount {
   /** Identifier used to look the account up in the resolved credential map. */
@@ -63,6 +65,18 @@ export const DEMO_ACCOUNTS: readonly DemoAccount[] = [
     envVar: 'SEED_PATIENT_PASSWORD',
     aliasEnvVars: ['PATIENT_PASSWORD'],
     hashPlaceholder: 'SEED_PATIENT_PASSWORD_HASH',
+  },
+  {
+    id: 'nurse',
+    envVar: 'SEED_NURSE_PASSWORD',
+    aliasEnvVars: ['NURSE_PASSWORD'],
+    hashPlaceholder: 'SEED_NURSE_PASSWORD_HASH',
+  },
+  {
+    id: 'pharmacist',
+    envVar: 'SEED_PHARMACIST_PASSWORD',
+    aliasEnvVars: ['PHARMACIST_PASSWORD'],
+    hashPlaceholder: 'SEED_PHARMACIST_PASSWORD_HASH',
   },
 ];
 
