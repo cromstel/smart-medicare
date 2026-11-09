@@ -22,7 +22,7 @@ export function PublicLayout() {
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
       <MarketingHeader />
-      <div className="flex-1"><Outlet /></div>
+      <div className="flex-1" id="main-content" role="main"><Outlet /></div>
       {hasFooter && <PublicFooter />}
     </div>
   );
