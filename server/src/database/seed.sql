@@ -211,12 +211,12 @@ INSERT INTO departments (id, hospital_id, name, head_of_department) VALUES
 --
 -- The password column holds a PLACEHOLDER, not a hash. The seed runner
 -- (`npm run db:setup` in server/) generates a bcrypt hash for each account
--- from the password configured in the environment -- SEED_SUPER_ADMIN_PASSWORD,
--- SEED_ADMIN_PASSWORD, SEED_DOCTOR_PASSWORD, SEED_PATIENT_PASSWORD,
--- SEED_NURSE_PASSWORD, SEED_PHARMACIST_PASSWORD, SEED_LAB_TECHNICIAN_PASSWORD,
--- SEED_HOSPITAL_MANAGEMENT_PASSWORD, SEED_RECEPTIONIST_PASSWORD,
--- SEED_BILLING_SPECIALIST_PASSWORD, SEED_INSURANCE_COORDINATOR_PASSWORD,
--- SEED_MEDICAL_RECORDS_CLERK_PASSWORD, SEED_RADIOLOGY_TECHNICIAN_PASSWORD -- and
+-- from the password configured in the environment -- SUPER_ADMIN_PASSWORD,
+-- ADMIN_PASSWORD, DOCTOR_PASSWORD, PATIENT_PASSWORD,
+-- NURSE_PASSWORD, PHARMACIST_PASSWORD, LAB_TECHNICIAN_PASSWORD,
+-- HOSPITAL_MANAGEMENT_PASSWORD, RECEPTIONIST_PASSWORD,
+-- BILLING_SPECIALIST_PASSWORD, INSURANCE_COORDINATOR_PASSWORD,
+-- MEDICAL_RECORDS_CLERK_PASSWORD, RADIOLOGY_TECHNICIAN_PASSWORD -- and
 -- substitutes it here. Nothing about a credential is written in the
 -- repository, and no hash is shared between accounts or deployments.
 --
@@ -225,7 +225,7 @@ INSERT INTO departments (id, hospital_id, name, head_of_department) VALUES
 -- cannot sign in. Use the runner.
 --
 -- These are development-only accounts for a local seed. If this seed is ever
--- applied anywhere reachable, set the SEED_*_PASSWORD variables to values
+-- applied anywhere reachable, set the *_PASSWORD variables to values
 -- that are not shared with anything else, and rotate them before doing
 -- anything else.
 --
@@ -240,28 +240,28 @@ INSERT INTO departments (id, hospital_id, name, head_of_department) VALUES
 -- is where the setup belongs for a privileged account: the operator chooses the
 -- moment it becomes mandatory.
 INSERT INTO users (id, role_id, email, password, name, totp_secret, hospital_id, department_id) VALUES
-(1, 1, 'superadmin@smarthealth.com', '${SEED_SUPER_ADMIN_PASSWORD_HASH}', 'Super Admin', NULL, 1, NULL), -- two-factor NOT enrolled by default
-(2, 2, 'admin@smarthealth.com', '${SEED_ADMIN_PASSWORD_HASH}', 'Admin User', NULL, 1, 1), -- two-factor NOT enrolled by default
-(3, 3, 'doctor@smarthealth.com', '${SEED_DOCTOR_PASSWORD_HASH}', 'Dr. Smith', 'GEZDGNBVGY3TQOJQ', 1, 1),
-(4, 4, 'patient@smarthealth.com', '${SEED_PATIENT_PASSWORD_HASH}', 'John Doe', 'GEZDGNBVGY3TQOJQ', 1, NULL),
+(1, 1, 'superadmin@smarthealth.com', '${SUPER_ADMIN_PASSWORD_HASH}', 'Super Admin', NULL, 1, NULL), -- two-factor NOT enrolled by default
+(2, 2, 'admin@smarthealth.com', '${ADMIN_PASSWORD_HASH}', 'Admin User', NULL, 1, 1), -- two-factor NOT enrolled by default
+(3, 3, 'doctor@smarthealth.com', '${DOCTOR_PASSWORD_HASH}', 'Dr. Smith', 'GEZDGNBVGY3TQOJQ', 1, 1),
+(4, 4, 'patient@smarthealth.com', '${PATIENT_PASSWORD_HASH}', 'John Doe', 'GEZDGNBVGY3TQOJQ', 1, NULL),
 -- Nurse and pharmacist: the remaining clinical roles. Both are enrolled with
 -- two-factor (totp_secret set) so their MFA path is exercisable out of the box,
 -- matching the doctor and patient accounts.
-(5, 5, 'nurse@smarthealth.com', '${SEED_NURSE_PASSWORD_HASH}', 'Nurse Johnson', 'GEZDGNBVGY3TQOJQ', 1, 1),
-(6, 6, 'pharmacist@smarthealth.com', '${SEED_PHARMACIST_PASSWORD_HASH}', 'Pharmacist Lee', 'GEZDGNBVGY3TQOJQ', 1, NULL),
+(5, 5, 'nurse@smarthealth.com', '${NURSE_PASSWORD_HASH}', 'Nurse Johnson', 'GEZDGNBVGY3TQOJQ', 1, 1),
+(6, 6, 'pharmacist@smarthealth.com', '${PHARMACIST_PASSWORD_HASH}', 'Pharmacist Lee', 'GEZDGNBVGY3TQOJQ', 1, NULL),
 
 -- Lab technician and Hospital Management: the remaining roles.
 -- Both are enrolled with two-factor (totp_secret set) so their MFA path is exercisable.
-(7, 7, 'labtech@smarthealth.com', '${SEED_LAB_TECHNICIAN_PASSWORD_HASH}', 'Lab Technician', 'GEZDGNBVGY3TQOJQ', 1, 1),
-(8, 8, 'mgmt@smarthealth.com', '${SEED_HOSPITAL_MANAGEMENT_PASSWORD_HASH}', 'Hospital Manager', 'GEZDGNBVGY3TQOJQ', 1, 1),
+(7, 7, 'labtech@smarthealth.com', '${LAB_TECHNICIAN_PASSWORD_HASH}', 'Lab Technician', 'GEZDGNBVGY3TQOJQ', 1, 1),
+(8, 8, 'mgmt@smarthealth.com', '${HOSPITAL_MANAGEMENT_PASSWORD_HASH}', 'Hospital Manager', 'GEZDGNBVGY3TQOJQ', 1, 1),
 
 -- Receptionist, Billing Specialist, Insurance Coordinator, Medical Records Clerk, Radiology Technician:
 -- New roles with their own MFA secrets for testing.
-(9, 9, 'receptionist@smarthealth.com', '${SEED_RECEPTIONIST_PASSWORD_HASH}', 'Receptionist', 'GEZDGNBVGY3TQOJQ', 1, 1),
-(10, 10, 'billing@smarthealth.com', '${SEED_BILLING_SPECIALIST_PASSWORD_HASH}', 'Billing Specialist', 'GEZDGNBVGY3TQOJQ', 1, 1),
-(11, 11, 'insurance@smarthealth.com', '${SEED_INSURANCE_COORDINATOR_PASSWORD_HASH}', 'Insurance Coordinator', 'GEZDGNBVGY3TQOJQ', 1, 1),
-(12, 12, 'records@smarthealth.com', '${SEED_MEDICAL_RECORDS_CLERK_PASSWORD_HASH}', 'Medical Records Clerk', 'GEZDGNBVGY3TQOJQ', 1, 1),
-(13, 13, 'radiology@smarthealth.com', '${SEED_RADIOLOGY_TECHNICIAN_PASSWORD_HASH}', 'Radiology Technician', 'GEZDGNBVGY3TQOJQ', 1, 1);
+(9, 9, 'receptionist@smarthealth.com', '${RECEPTIONIST_PASSWORD_HASH}', 'Receptionist', 'GEZDGNBVGY3TQOJQ', 1, 1),
+(10, 10, 'billing@smarthealth.com', '${BILLING_SPECIALIST_PASSWORD_HASH}', 'Billing Specialist', 'GEZDGNBVGY3TQOJQ', 1, 1),
+(11, 11, 'insurance@smarthealth.com', '${INSURANCE_COORDINATOR_PASSWORD_HASH}', 'Insurance Coordinator', 'GEZDGNBVGY3TQOJQ', 1, 1),
+(12, 12, 'records@smarthealth.com', '${MEDICAL_RECORDS_CLERK_PASSWORD_HASH}', 'Medical Records Clerk', 'GEZDGNBVGY3TQOJQ', 1, 1),
+(13, 13, 'radiology@smarthealth.com', '${RADIOLOGY_TECHNICIAN_PASSWORD_HASH}', 'Radiology Technician', 'GEZDGNBVGY3TQOJQ', 1, 1);
 
 -- 6. Seed Staff
 INSERT INTO staff (id, staff_id, user_id, first_name, last_name, role, department_id, hospital_id, email, phone, join_date) VALUES

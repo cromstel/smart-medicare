@@ -9,19 +9,19 @@
  *
  * The passwords are configuration now:
  *
- *   SEED_SUPER_ADMIN_PASSWORD   the seeded super administrator
- *   SEED_ADMIN_PASSWORD         the seeded hospital administrator
- *   SEED_DOCTOR_PASSWORD        the seeded clinician
- *   SEED_PATIENT_PASSWORD       the seeded patient
- *   SEED_NURSE_PASSWORD              the seeded nurse
- *   SEED_PHARMACIST_PASSWORD         the seeded pharmacist
- *   SEED_LAB_TECHNICIAN_PASSWORD     the seeded lab technician
- *   SEED_HOSPITAL_MANAGEMENT_PASSWORD the seeded hospital manager
- *   SEED_RECEPTIONIST_PASSWORD       the seeded receptionist
- *   SEED_BILLING_SPECIALIST_PASSWORD the seeded billing specialist
- *   SEED_INSURANCE_COORDINATOR_PASSWORD the seeded insurance coordinator
- *   SEED_MEDICAL_RECORDS_CLERK_PASSWORD the seeded medical records clerk
- *   SEED_RADIOLOGY_TECHNICIAN_PASSWORD the seeded radiology technician
+ *   SUPER_ADMIN_PASSWORD        the seeded super administrator
+ *   ADMIN_PASSWORD              the seeded hospital administrator
+ *   DOCTOR_PASSWORD             the seeded clinician
+ *   PATIENT_PASSWORD            the seeded patient
+ *   NURSE_PASSWORD              the seeded nurse
+ *   PHARMACIST_PASSWORD         the seeded pharmacist
+ *   LAB_TECHNICIAN_PASSWORD     the seeded lab technician
+ *   HOSPITAL_MANAGEMENT_PASSWORD the seeded hospital manager
+ *   RECEPTIONIST_PASSWORD       the seeded receptionist
+ *   BILLING_SPECIALIST_PASSWORD the seeded billing specialist
+ *   INSURANCE_COORDINATOR_PASSWORD the seeded insurance coordinator
+ *   MEDICAL_RECORDS_CLERK_PASSWORD the seeded medical records clerk
+ *   RADIOLOGY_TECHNICIAN_PASSWORD the seeded radiology technician
  *
  * The seed runner hashes whatever these resolve to and substitutes the hashes
  * into the seed file, so no hash and no password is stored in the repository.
@@ -51,81 +51,81 @@ export interface DemoAccount {
 export const DEMO_ACCOUNTS: readonly DemoAccount[] = [
   {
     id: 'superAdmin',
-    envVar: 'SEED_SUPER_ADMIN_PASSWORD',
+    envVar: 'SUPER_ADMIN_PASSWORD',
     aliasEnvVars: ['SUPER_ADMIN_PASSWORD', 'super_ADMIN_PASSWORD'],
-    hashPlaceholder: 'SEED_SUPER_ADMIN_PASSWORD_HASH',
+    hashPlaceholder: 'SUPER_ADMIN_PASSWORD_HASH',
   },
   {
     id: 'admin',
-    envVar: 'SEED_ADMIN_PASSWORD',
+    envVar: 'ADMIN_PASSWORD',
     aliasEnvVars: ['ADMIN_PASSWORD'],
-    hashPlaceholder: 'SEED_ADMIN_PASSWORD_HASH',
+    hashPlaceholder: 'ADMIN_PASSWORD_HASH',
   },
   {
     id: 'doctor',
-    envVar: 'SEED_DOCTOR_PASSWORD',
+    envVar: 'DOCTOR_PASSWORD',
     aliasEnvVars: ['DOCTOR_PASSWORD'],
-    hashPlaceholder: 'SEED_DOCTOR_PASSWORD_HASH',
+    hashPlaceholder: 'DOCTOR_PASSWORD_HASH',
   },
   {
     id: 'patient',
-    envVar: 'SEED_PATIENT_PASSWORD',
+    envVar: 'PATIENT_PASSWORD',
     aliasEnvVars: ['PATIENT_PASSWORD'],
-    hashPlaceholder: 'SEED_PATIENT_PASSWORD_HASH',
+    hashPlaceholder: 'PATIENT_PASSWORD_HASH',
   },
   {
     id: 'nurse',
-    envVar: 'SEED_NURSE_PASSWORD',
+    envVar: 'NURSE_PASSWORD',
     aliasEnvVars: ['NURSE_PASSWORD'],
-    hashPlaceholder: 'SEED_NURSE_PASSWORD_HASH',
+    hashPlaceholder: 'NURSE_PASSWORD_HASH',
   },
   {
     id: 'pharmacist',
-    envVar: 'SEED_PHARMACIST_PASSWORD',
+    envVar: 'PHARMACIST_PASSWORD',
     aliasEnvVars: ['PHARMACIST_PASSWORD'],
-    hashPlaceholder: 'SEED_PHARMACIST_PASSWORD_HASH',
+    hashPlaceholder: 'PHARMACIST_PASSWORD_HASH',
   },
   {
     id: 'labTechnician',
-    envVar: 'SEED_LAB_TECHNICIAN_PASSWORD',
+    envVar: 'LAB_TECHNICIAN_PASSWORD',
     aliasEnvVars: ['LAB_TECHNICIAN_PASSWORD'],
-    hashPlaceholder: 'SEED_LAB_TECHNICIAN_PASSWORD_HASH',
+    hashPlaceholder: 'LAB_TECHNICIAN_PASSWORD_HASH',
   },
   {
     id: 'hospitalManagement',
-    envVar: 'SEED_HOSPITAL_MANAGEMENT_PASSWORD',
+    envVar: 'HOSPITAL_MANAGEMENT_PASSWORD',
     aliasEnvVars: ['HOSPITAL_MANAGEMENT_PASSWORD'],
-    hashPlaceholder: 'SEED_HOSPITAL_MANAGEMENT_PASSWORD_HASH',
+    hashPlaceholder: 'HOSPITAL_MANAGEMENT_PASSWORD_HASH',
   },
   {
     id: 'receptionist',
-    envVar: 'SEED_RECEPTIONIST_PASSWORD',
+    envVar: 'RECEPTIONIST_PASSWORD',
     aliasEnvVars: ['RECEPTIONIST_PASSWORD'],
-    hashPlaceholder: 'SEED_RECEPTIONIST_PASSWORD_HASH',
+    hashPlaceholder: 'RECEPTIONIST_PASSWORD_HASH',
   },
   {
     id: 'billingSpecialist',
-    envVar: 'SEED_BILLING_SPECIALIST_PASSWORD',
+    envVar: 'BILLING_SPECIALIST_PASSWORD',
     aliasEnvVars: ['BILLING_SPECIALIST_PASSWORD'],
-    hashPlaceholder: 'SEED_BILLING_SPECIALIST_PASSWORD_HASH',
+    hashPlaceholder: 'BILLING_SPECIALIST_PASSWORD_HASH',
   },
   {
     id: 'insuranceCoordinator',
-    envVar: 'SEED_INSURANCE_COORDINATOR_PASSWORD',
+    envVar: 'INSURANCE_COORDINATOR_PASSWORD',
     aliasEnvVars: ['INSURANCE_COORDINATOR_PASSWORD'],
-    hashPlaceholder: 'SEED_INSURANCE_COORDINATOR_PASSWORD_HASH',
+    hashPlaceholder: 'INSURANCE_COORDINATOR_PASSWORD_HASH',
   },
   {
     id: 'medicalRecordsClerk',
-    envVar: 'SEED_MEDICAL_RECORDS_CLERK_PASSWORD',
+    envVar: 'MEDICAL_RECORDS_CLERK_PASSWORD',
     aliasEnvVars: ['MEDICAL_RECORDS_CLERK_PASSWORD'],
-    hashPlaceholder: 'SEED_MEDICAL_RECORDS_CLERK_PASSWORD_HASH',
+    hashPlaceholder: 'MEDICAL_RECORDS_CLERK_PASSWORD_HASH',
   },
   {
     id: 'radiologyTechnician',
-    envVar: 'SEED_RADIOLOGY_TECHNICIAN_PASSWORD',
+    envVar: 'RADIOLOGY_TECHNICIAN_PASSWORD',
     aliasEnvVars: ['RADIOLOGY_TECHNICIAN_PASSWORD'],
-    hashPlaceholder: 'SEED_RADIOLOGY_TECHNICIAN_PASSWORD_HASH',
+    hashPlaceholder: 'RADIOLOGY_TECHNICIAN_PASSWORD_HASH',
   },
 ];
 
