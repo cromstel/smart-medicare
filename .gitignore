@@ -43,6 +43,8 @@ server/certs/
 certs/
 *.p12
 *.crt
+*.pem
+*.key
 # Local-only review notes — never commit
 thoughts/
 # Internal documentation — never commit (protected from public exposure)
