@@ -137,7 +137,13 @@ const testimonials = [
     quote: 'Having financial analytics tied directly to patient outcomes gave our board the clarity they needed. We reduced operational costs by 23% while improving care quality scores.',
     author: 'Dr. Maria Santos',
     role: 'Hospital Administrator',
-    hospital: 'St. Luke\'s Healthcare Network',
+    hospital: "St. Luke's Healthcare Network",
+  },
+  {
+    quote: 'The emergency board gave us real-time bed management during peak flu season. We reduced ED boarding time by 45% and eliminated hallway boarding entirely.',
+    author: 'Dr. Robert Kim',
+    role: 'Emergency Department Director',
+    hospital: 'City General Hospital',
   },
 ];
 
@@ -527,7 +533,7 @@ function Testimonials() {
         </div>
 
         {/* Testimonial Cards */}
-        <div className="grid md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {testimonials.map((t, i) => (
             <motion.div
               key={t.author}
