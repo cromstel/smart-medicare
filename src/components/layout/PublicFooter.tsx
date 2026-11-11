@@ -92,7 +92,13 @@ export function PublicFooter() {
         </div>
 
         <div className="flex flex-col gap-3 pt-4 sm:flex-row sm:items-center sm:justify-between">
-          <p className="font-mono text-xs tabular-nums text-primary-foreground/55">© {new Date().getFullYear()} {APP_NAME}. Built for accountable care.</p>
+          <p className="font-mono text-xs tabular-nums text-primary-foreground/55">
+  © {new Date().getFullYear()}{' '}
+  <Link to="/" className="hover:text-primary-foreground transition-colors underline underline-offset-2">
+    {APP_NAME}
+  </Link>
+  . All All Rights reserved
+</p>
           <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
             <Link to="/auth/super-admin/login" className="inline-flex items-center gap-1.5 text-xs text-primary-foreground/65 transition-colors hover:text-primary-foreground focus-visible:text-primary-foreground"><Lock className="h-3.5 w-3.5" aria-hidden="true" /> Super admin</Link>
             <Link to="/auth/login" className="inline-flex items-center gap-1.5 text-xs text-primary-foreground/65 transition-colors hover:text-primary-foreground focus-visible:text-primary-foreground"><Zap className="h-3.5 w-3.5" aria-hidden="true" /> Staff sign in</Link>
