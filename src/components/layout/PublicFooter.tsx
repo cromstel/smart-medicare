@@ -94,7 +94,7 @@ export function PublicFooter() {
         <div className="flex flex-col gap-3 pt-4 sm:flex-row sm:items-center sm:justify-between">
           <p className="font-mono text-xs tabular-nums text-primary-foreground/55">
   © {new Date().getFullYear()}{' '}
-  <Link to="/" className="hover:text-primary-foreground transition-colors underline underline-offset-2">
+  <Link to="/" className="text-accent hover:text-accent/80 transition-colors">
     {APP_NAME}
   </Link>
   . All All Rights reserved
