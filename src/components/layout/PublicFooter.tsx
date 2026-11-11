@@ -65,8 +65,8 @@ export function PublicFooter() {
 
   return (
     <footer className="border-t border-primary-foreground/15 bg-primary text-primary-foreground" role="contentinfo">
-      <div className="mx-auto w-full px-4 py-8 sm:px-6 sm:py-12 lg:px-8 lg:py-16">
-        <div className="grid gap-12 border-b border-primary-foreground/15 pb-8 lg:grid-cols-12 lg:gap-8 lg:pb-12">
+      <div className="mx-auto w-full px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
+        <div className="grid gap-8 border-b border-primary-foreground/15 pb-6 lg:grid-cols-12 lg:gap-8 lg:pb-8">
           <div className="max-w-sm lg:col-span-4">
             <Link to="/" className="inline-flex items-center gap-2.5" aria-label={`${APP_NAME} — Home`}>
               <Logo size="sm" variant="light" />
