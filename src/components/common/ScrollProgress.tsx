@@ -27,7 +27,8 @@ export function ScrollProgress() {
     >
       <motion.div
         className="h-full bg-[var(--sea-blue)] origin-left"
-        style={{ scaleX: progress / 100 }}
+        initial={{ scaleX: 0 }}
+        animate={{ scaleX: progress / 100 }}
         transition={prefersReduced ? { duration: 0 } : { duration: 0.1, ease: 'easeOut' }}
       />
     </div>
