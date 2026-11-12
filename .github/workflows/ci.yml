@@ -35,6 +35,27 @@ env:
   # 32-byte key / 16-byte IV, hex encoded. CI-only; never a production value.
   ENCRYPTION_KEY: 0000000000000000000000000000000000000000000000000000000000000000
   ENCRYPTION_IV: 00000000000000000000000000000000
+  # The passwords the seed gives the demo accounts.
+  #
+  # The seed runner hashes whatever these resolve to and substitutes the hashes
+  # into the seed file, so a seeded account can actually be signed into -- the
+  # alternative, applying the seed file directly, writes the literal
+  # placeholder into the password column and produces accounts nobody can
+  # use. These are CI-only values for a database that lives for the length of
+  # one job; they are not a credential for anything.
+  SUPER_ADMIN_PASSWORD: ci-only-not-a-real-password
+  ADMIN_PASSWORD: ci-only-not-a-real-password
+  DOCTOR_PASSWORD: ci-only-not-a-real-password
+  PATIENT_PASSWORD: ci-only-not-a-real-password
+  NURSE_PASSWORD: ci-only-not-a-real-password
+  PHARMACIST_PASSWORD: ci-only-not-a-real-password
+  LAB_TECHNICIAN_PASSWORD: ci-only-not-a-real-password
+  HOSPITAL_MANAGEMENT_PASSWORD: ci-only-not-a-real-password
+  RECEPTIONIST_PASSWORD: ci-only-not-a-real-password
+  BILLING_SPECIALIST_PASSWORD: ci-only-not-a-real-password
+  INSURANCE_COORDINATOR_PASSWORD: ci-only-not-a-real-password
+  MEDICAL_RECORDS_CLERK_PASSWORD: ci-only-not-a-real-password
+  RADIOLOGY_TECHNICIAN_PASSWORD: ci-only-not-a-real-password
 
 jobs:
   frontend:

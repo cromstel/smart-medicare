@@ -171,8 +171,23 @@ export const resolveDemoPasswordSource = (account: DemoAccount): string => {
   return 'unset (must be configured)';
 };
 
-/** The placeholder token the seed file carries for a password hash. */
-const HASH_PLACEHOLDER = /\$\{(SEED_[A-Z_]+_PASSWORD_HASH)\}/g;
+/**
+ * The placeholder token the seed file carries for a password hash.
+ *
+ * The token is `${<ACCOUNT>_PASSWORD_HASH}`, where `<ACCOUNT>` is the account
+ * identifier in upper case. The `SEED_` prefix that used to open it was
+ * removed when the password environment variables were renamed, and the
+ * pattern was not renamed with it. A pattern that still asked for the prefix
+ * matched nothing, so every placeholder survived the substitution and the
+ * literal text `${ADMIN_PASSWORD_HASH}` was written into the `users` table as
+ * the password. The seeded accounts then existed but could not be signed into
+ * with any password.
+ *
+ * The prefix is optional here so that both spellings are substituted: a
+ * pattern that matches only one of them fails silently in the same way, and
+ * the failure is invisible until someone tries to sign in.
+ */
+const HASH_PLACEHOLDER = /\$\{(?:SEED_)?([A-Z_]+_PASSWORD_HASH)\}/g;
 
 /**
  * Replaces the password placeholders in the seed file with real hashes.
@@ -186,7 +201,10 @@ export const applySeedPasswordHashes = (
 ): string => {
   const missing: string[] = [];
   const rendered = sql.replace(HASH_PLACEHOLDER, (_match, placeholder: string) => {
-    const hash = hashes[placeholder];
+    // The hash map is keyed by the account identifier without the prefix, so
+    // a placeholder that carries one is looked up without it.
+    const key = placeholder.startsWith('SEED_') ? placeholder.slice('SEED_'.length) : placeholder;
+    const hash = hashes[key] ?? hashes[placeholder];
     if (!hash) {
       missing.push(placeholder);
       return _match;
