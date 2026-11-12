@@ -61,24 +61,14 @@ export const FontSizeAdjuster: React.FC = () => {
     });
   }, []);
 
-  // Keyboard support for accessibility
-  const onKeyDown = useCallback((e: React.KeyboardEvent<HTMLDivElement>) => {
-    if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
-      e.preventDefault();
-      adjustFontSize('increase');
-    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
-      e.preventDefault();
-      adjustFontSize('decrease');
-    }
-  }, [adjustFontSize]);
+  // Keyboard support for accessibility: individual buttons are natively
+  // focusable and activate on Enter/Space.
 
   return (
     <div
       className="flex items-center gap-2"
       role="toolbar"
       aria-label="Font size controls"
-      tabIndex={0}
-      onKeyDown={onKeyDown}
     >
       <Button
         variant="outline"

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { API_ORIGIN } from '@/config/api';
 import { Skeleton } from '@/components/ui/skeleton';
 import { api } from '@/services/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -288,7 +289,7 @@ const transformedData = data.map((doc: any) => ({
                 <div className="grid gap-4 py-4">
                   <div className="space-y-2">
                     <Label htmlFor="file">Select File</Label>
-                    <Input id="file" type="file" onChange={(e) => {
+                    <Input id="file" type="file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" onChange={(e) => {
                       const file = e.target.files?.[0] || null;
                       setNewDocument((prev) => ({ ...prev, file }));
                       if (file) {
@@ -356,10 +357,10 @@ const transformedData = data.map((doc: any) => ({
                     </Select>
                     <p className="text-xs text-muted-foreground">
                       {newDocument.storageLocation === 'googledrive' && (
-                        <>Stored in Google Drive. <a className="text-accent underline" href="/api/documents/googledrive/auth">Connect Google Drive</a></>
+                        <>Stored in Google Drive. <a className="text-accent underline" href={`${API_ORIGIN}/api/documents/googledrive/auth`}>Connect Google Drive</a></>
                       )}
                       {newDocument.storageLocation === 'onedrive' && (
-                        <>Stored in OneDrive. <a className="text-accent underline" href="/api/documents/onedrive/auth">Connect OneDrive</a></>
+                        <>Stored in OneDrive. <a className="text-accent underline" href={`${API_ORIGIN}/api/documents/onedrive/auth`}>Connect OneDrive</a></>
                       )}
                       {newDocument.storageLocation === 'local' && (
                         <>Stored on the hospital server.</>

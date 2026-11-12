@@ -184,7 +184,7 @@ export function ShiftSchedulerModule() {
               <h2 className="text-xl font-bold tracking-tight text-primary-foreground">
                 Algorithmic Shift Scheduler & Workload Balancer
               </h2>
-              <Badge className="bg-accent text-white font-mono text-[10px]">AUTO-OPTIMIZER V2.4</Badge>
+              <Badge className="bg-accent text-accent-foreground font-mono text-[10px]">AUTO-OPTIMIZER V2.4</Badge>
             </div>
             <p className="text-xs text-accent/80 mt-0.5">
               Auto-balances clinician shift assignments matching availability, fatigue prevention rules, and historical departmental workload curves
@@ -195,7 +195,7 @@ export function ShiftSchedulerModule() {
         <Button
           onClick={handleAutoBalanceAlgorithm}
           disabled={isAutoBalancing}
-          className="bg-accent hover:bg-accent text-white font-bold text-xs h-10 px-4 shadow-lg gap-2 border border-accent/30 shrink-0"
+          className="bg-accent hover:bg-accent text-accent-foreground font-bold text-xs h-10 px-4 shadow-lg gap-2 border border-accent/30 shrink-0"
         >
           <RefreshCw className={`h-4 w-4 ${isAutoBalancing ? 'animate-spin' : ''}`} />
           <span>Auto-Balance Shifts ({balanceScore}% Score)</span>
@@ -352,7 +352,7 @@ export function ShiftSchedulerModule() {
                           >
                             <div className="flex items-center justify-between">
                               <span className="font-bold text-foreground">{s.clinicianName}</span>
-                              {s.isOvertimeRisk && <Badge className="bg-warning text-black text-[8px]">OT RISK</Badge>}
+                              {s.isOvertimeRisk && <Badge className="bg-warning text-warning-foreground text-[8px]">OT RISK</Badge>}
                             </div>
                             <span className="text-[10px] text-muted-foreground block">{s.role}</span>
                           </div>
@@ -391,7 +391,7 @@ export function ShiftSchedulerModule() {
             </div>
 
             <Button
-              className="w-full bg-accent hover:bg-accent text-white font-bold"
+              className="w-full bg-accent hover:bg-accent text-accent-foreground font-bold"
               onClick={() => {
                 toast.success('Shift Swap Request submitted to Head Nurse for signoff');
                 setIsSwapDialogOpen(false);

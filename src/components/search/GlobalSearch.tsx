@@ -283,6 +283,10 @@ export function GlobalSearch() {
             }
           }}
           onKeyDown={handleKeyDown}
+          aria-controls={isOpen ? 'global-search-listbox' : undefined}
+          aria-activedescendant={
+            results[selectedIndex] && isOpen ? `global-search-listbox-${results[selectedIndex].id}` : undefined
+          }
           className="pl-9 pr-16 h-9 bg-background border-border text-sm placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-accent"
         />
         <div className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center gap-1">
@@ -295,6 +299,7 @@ export function GlobalSearch() {
                 setQuery('');
                 executeSearch('');
               }}
+              aria-label="Clear search"
               className="text-muted-foreground hover:text-foreground p-0.5"
             >
               <X className="h-3.5 w-3.5" />
@@ -309,7 +314,12 @@ export function GlobalSearch() {
 
       {/* Results Dropdown */}
       {isOpen && (
-        <div className="absolute left-0 right-0 top-full mt-2 z-50 max-h-[480px] overflow-y-auto rounded-lg border border-border bg-card shadow-2xl p-2 animate-in fade-in-0 zoom-in-95 duration-100">
+        <div
+          role="listbox"
+          id="global-search-listbox"
+          aria-label="Search results"
+          className="absolute left-0 right-0 top-full mt-2 z-50 max-h-[480px] overflow-y-auto rounded-lg border border-border bg-card shadow-2xl p-2 animate-in fade-in-0 zoom-in-95 duration-100"
+        >
           {loading && results.length === 0 ? (
             <div className="flex items-center justify-center py-8 text-sm text-muted-foreground gap-2">
               <Loader2 className="h-4 w-4 animate-spin text-accent" />
@@ -338,8 +348,18 @@ export function GlobalSearch() {
                       return (
                         <div
                           key={item.id}
+                          id={`global-search-listbox-${item.id}`}
+                          role="option"
+                          aria-selected={isSelected}
+                          tabIndex={isSelected ? 0 : -1}
                           onClick={() => handleSelect(item)}
                           onMouseEnter={() => setSelectedIndex(itemIdx)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault();
+                              handleSelect(item);
+                            }
+                          }}
                           className={`flex items-center justify-between px-2.5 py-2 rounded-md cursor-pointer text-sm transition-colors ${
                             isSelected ? 'bg-secondary text-foreground' : 'text-foreground hover:bg-secondary/60'
                           }`}
@@ -381,8 +401,18 @@ export function GlobalSearch() {
                       return (
                         <div
                           key={item.id}
+                          id={`global-search-listbox-${item.id}`}
+                          role="option"
+                          aria-selected={isSelected}
+                          tabIndex={isSelected ? 0 : -1}
                           onClick={() => handleSelect(item)}
                           onMouseEnter={() => setSelectedIndex(itemIdx)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault();
+                              handleSelect(item);
+                            }
+                          }}
                           className={`flex items-center justify-between px-2.5 py-2 rounded-md cursor-pointer text-sm transition-colors ${
                             isSelected ? 'bg-secondary text-foreground' : 'text-foreground hover:bg-secondary/60'
                           }`}
@@ -424,8 +454,18 @@ export function GlobalSearch() {
                       return (
                         <div
                           key={item.id}
+                          id={`global-search-listbox-${item.id}`}
+                          role="option"
+                          aria-selected={isSelected}
+                          tabIndex={isSelected ? 0 : -1}
                           onClick={() => handleSelect(item)}
                           onMouseEnter={() => setSelectedIndex(itemIdx)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault();
+                              handleSelect(item);
+                            }
+                          }}
                           className={`flex items-center justify-between px-2.5 py-2 rounded-md cursor-pointer text-sm transition-colors ${
                             isSelected ? 'bg-secondary text-foreground' : 'text-foreground hover:bg-secondary/60'
                           }`}
@@ -467,8 +507,18 @@ export function GlobalSearch() {
                       return (
                         <div
                           key={item.id}
+                          id={`global-search-listbox-${item.id}`}
+                          role="option"
+                          aria-selected={isSelected}
+                          tabIndex={isSelected ? 0 : -1}
                           onClick={() => handleSelect(item)}
                           onMouseEnter={() => setSelectedIndex(itemIdx)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault();
+                              handleSelect(item);
+                            }
+                          }}
                           className={`flex items-center justify-between px-2.5 py-2 rounded-md cursor-pointer text-sm transition-colors ${
                             isSelected ? 'bg-secondary text-foreground' : 'text-foreground hover:bg-secondary/60'
                           }`}

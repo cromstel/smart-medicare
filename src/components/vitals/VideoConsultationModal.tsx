@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAudit } from '@/contexts/AuditContext';
+import { ICE_SERVERS } from '@/config/app';
 
 interface VideoConsultationModalProps {
   isOpen: boolean;
@@ -44,10 +45,10 @@ export const VideoConsultationModal: React.FC<VideoConsultationModalProps> = ({
   }
 
   const INITIAL_QUEUE: WaitingPatient[] = [
-    { id: '101', name: 'Emmanuel Mensah', triageLevel: 'ESI-2 Critical', triageColor: 'bg-destructive', waitTime: '08:42', status: 'Waiting' },
-    { id: '102', name: 'Abena Koomson', triageLevel: 'ESI-3 Urgent', triageColor: 'bg-warning', waitTime: '15:10', status: 'Waiting' },
-    { id: '103', name: 'Kofi Bako', triageLevel: 'ESI-4 Stable', triageColor: 'bg-success', waitTime: '02:15', status: 'Ready' },
-    { id: '104', name: 'Patricia Antwi', triageLevel: 'ESI-1 Resuscitation', triageColor: 'bg-destructive', waitTime: '22:30', status: 'Waiting' },
+    { id: '101', name: 'Emmanuel Mensah', triageLevel: 'ESI-2 Critical', triageColor: 'bg-destructive text-destructive-foreground', waitTime: '08:42', status: 'Waiting' },
+    { id: '102', name: 'Abena Koomson', triageLevel: 'ESI-3 Urgent', triageColor: 'bg-warning text-warning-foreground', waitTime: '15:10', status: 'Waiting' },
+    { id: '103', name: 'Kofi Bako', triageLevel: 'ESI-4 Stable', triageColor: 'bg-success text-success-foreground', waitTime: '02:15', status: 'Ready' },
+    { id: '104', name: 'Patricia Antwi', triageLevel: 'ESI-1 Resuscitation', triageColor: 'bg-destructive text-destructive-foreground', waitTime: '22:30', status: 'Waiting' },
   ];
 
   const [waitingQueue, setWaitingQueue] = useState<WaitingPatient[]>(INITIAL_QUEUE);
@@ -233,7 +234,9 @@ export const VideoConsultationModal: React.FC<VideoConsultationModalProps> = ({
       }
 
       // 2. Establish Real Local peer-to-peer WebRTC connections
-      const configuration = { iceServers: [{ urls: 'ice:localhost' }] };
+      // The ICE servers are configuration: a deployment behind a network that
+      // hides the client address needs a server to say what address it has.
+      const configuration = { iceServers: ICE_SERVERS };
       const pc1 = new RTCPeerConnection(configuration);
       const pc2 = new RTCPeerConnection(configuration);
       
@@ -402,7 +405,7 @@ export const VideoConsultationModal: React.FC<VideoConsultationModalProps> = ({
                             <div className="space-y-1">
                               <div className="flex flex-wrap items-center gap-2">
                                 <span className="font-bold text-xs text-slate-200">{patient.name}</span>
-                                <span className={`text-[9px] px-1.5 py-0.5 rounded text-white font-extrabold uppercase tracking-wide ${patient.triageColor}`}>
+                                <span className={`text-[9px] px-1.5 py-0.5 rounded font-extrabold uppercase tracking-wide ${patient.triageColor}`}>
                                   {patient.triageLevel}
                                 </span>
                               </div>
@@ -424,7 +427,7 @@ export const VideoConsultationModal: React.FC<VideoConsultationModalProps> = ({
                                 variant={isCurrent ? "default" : "outline"}
                                 className={`h-7 text-[11px] font-bold ${
                                   isCurrent 
-                                    ? 'bg-accent hover:bg-accent text-white' 
+                                    ? 'bg-accent hover:bg-accent text-accent-foreground' 
                                     : 'border-slate-800 text-slate-300 hover:bg-slate-900'
                                 }`}
                                 onClick={() => {
@@ -474,7 +477,7 @@ export const VideoConsultationModal: React.FC<VideoConsultationModalProps> = ({
                       <div>Gateway: <strong className="text-success">Secure E2EE Peer-to-Peer</strong></div>
                     </div>
 
-                    <Button onClick={initiateWebRTC} className="w-full bg-accent hover:bg-accent text-white gap-2 font-semibold h-9 text-xs">
+                    <Button onClick={initiateWebRTC} className="w-full bg-accent hover:bg-accent text-accent-foreground gap-2 font-semibold h-9 text-xs">
                       <Play className="h-4 w-4" />
                       <span>Launch Consultation Link</span>
                     </Button>
@@ -629,7 +632,7 @@ export const VideoConsultationModal: React.FC<VideoConsultationModalProps> = ({
                       key={idx} 
                       className={`flex flex-col max-w-[85%] ${msg.sender === 'clinician' ? 'ml-auto items-end' : 'mr-auto items-start'}`}
                     >
-                      <div className={`p-2.5 rounded-lg text-xs leading-relaxed ${msg.sender === 'clinician' ? 'bg-accent text-white rounded-br-none' : 'bg-slate-800 text-slate-100 rounded-bl-none'}`}>
+                      <div className={`p-2.5 rounded-lg text-xs leading-relaxed ${msg.sender === 'clinician' ? 'bg-accent text-accent-foreground rounded-br-none' : 'bg-slate-800 text-slate-100 rounded-bl-none'}`}>
                         {msg.text}
                       </div>
                       <span className="text-[9px] text-slate-500 mt-1">{msg.time}</span>
@@ -648,7 +651,7 @@ export const VideoConsultationModal: React.FC<VideoConsultationModalProps> = ({
                   <Button 
                     size="icon" 
                     onClick={handleSendMessage}
-                    className="h-8 w-8 bg-accent hover:bg-accent text-white"
+                    className="h-8 w-8 bg-accent hover:bg-accent text-accent-foreground"
                   >
                     <Send className="h-3.5 w-3.5" />
                   </Button>

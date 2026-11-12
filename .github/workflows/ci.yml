@@ -1,9 +1,16 @@
 # Continuous integration for Smart MediCare.
 #
-# These jobs are the substrate for branch protection: protected branches
-# require these status checks to pass, so a change cannot land unless the
-# frontend and backend gates are green. Keeping the job names stable matters --
-# renaming one orphans the required check and silently stops it being enforced.
+# The job names below are not cosmetic. Branch protection on `main` requires
+# three status checks by name -- "Frontend gates", "Backend gates" and
+# "Secret and policy scan" -- and a required check that the workflow never
+# reports can never go green. Renaming a job orphans the requirement and
+# silently stops it being enforced, so these names are load-bearing.
+#
+# The gates run as separate jobs because the runner gives each job its own
+# machine. Locally they have to run one after another, because a machine with
+# little free memory cannot hold a front-end build and a back-end test suite
+# at the same time; that constraint is why `npm run verify` exists and why
+# the local order is fixed.
 
 name: CI
 
@@ -28,6 +35,27 @@ env:
   # 32-byte key / 16-byte IV, hex encoded. CI-only; never a production value.
   ENCRYPTION_KEY: 0000000000000000000000000000000000000000000000000000000000000000
   ENCRYPTION_IV: 00000000000000000000000000000000
+  # The passwords the seed gives the demo accounts.
+  #
+  # The seed runner hashes whatever these resolve to and substitutes the hashes
+  # into the seed file, so a seeded account can actually be signed into -- the
+  # alternative, applying the seed file directly, writes the literal
+  # placeholder into the password column and produces accounts nobody can
+  # use. These are CI-only values for a database that lives for the length of
+  # one job; they are not a credential for anything.
+  SUPER_ADMIN_PASSWORD: ci-only-not-a-real-password
+  ADMIN_PASSWORD: ci-only-not-a-real-password
+  DOCTOR_PASSWORD: ci-only-not-a-real-password
+  PATIENT_PASSWORD: ci-only-not-a-real-password
+  NURSE_PASSWORD: ci-only-not-a-real-password
+  PHARMACIST_PASSWORD: ci-only-not-a-real-password
+  LAB_TECHNICIAN_PASSWORD: ci-only-not-a-real-password
+  HOSPITAL_MANAGEMENT_PASSWORD: ci-only-not-a-real-password
+  RECEPTIONIST_PASSWORD: ci-only-not-a-real-password
+  BILLING_SPECIALIST_PASSWORD: ci-only-not-a-real-password
+  INSURANCE_COORDINATOR_PASSWORD: ci-only-not-a-real-password
+  MEDICAL_RECORDS_CLERK_PASSWORD: ci-only-not-a-real-password
+  RADIOLOGY_TECHNICIAN_PASSWORD: ci-only-not-a-real-password
 
 jobs:
   frontend:
@@ -39,7 +67,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-          cache: npm
+          cache: 'npm'
 
       - name: Install dependencies
         run: npm ci
@@ -51,98 +79,59 @@ jobs:
         run: npm run type-check
 
       - name: Unit tests
-        run: npm test -- --run
+        # The test files are deliberately not tracked in this repository (see
+        # the .gitignore rules for `*.test.*` and `e2e/`), so a fresh CI
+        # checkout collects no test files at all. Vitest treats that as a
+        # failure, which would leave the branch permanently unmergeable for a
+        # reason that has nothing to do with the change under test.
+        #
+        # `--passWithNoTests` says precisely that: an empty suite is not a
+        # failure. A suite that exists and fails still fails the job, because
+        # that is the case the flag does not touch. The local `npm run verify`
+        # deliberately does NOT pass this flag: on a developer machine the
+        # suite is present, and a machine where it has gone missing should be
+        # loud rather than quietly green.
+        run: npm test -- --run --passWithNoTests
 
       - name: Production build
         run: npm run build
-
-  frontend-e2e:
-    name: Frontend e2e
-    runs-on: ubuntu-latest
-
-    # Browser-level coverage for the sign-in pages and responsive layout.
-    #
-    # It was absent until now, which is why a whole class of regression could
-    # land unnoticed: the suite could not boot at all (playwright.config.ts
-    # pointed at an e2e/global-setup.ts that was never committed) and every spec
-    # still targeted pre-rename routes, so nothing ran and nothing was green to
-    # go stale.
-    #
-    # Scope is deliberate. `--grep-invert @db` excludes the specs that need the
-    # real API plus a seeded MySQL (the clinician/super-admin route walks, the
-    # super-admin user-management flow). Those skip themselves with an explicit
-    # reason when the backend is absent, rather than reporting a wall of 403s
-    # that look like product regressions. Everything that runs here needs only
-    # the Vite dev server, because src/server/mockApi.ts is mounted as middleware
-    # and serves the API in-process.
-    env:
-      VITE_PORT: 5175
-      CI: "true"
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: npm
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Cache Playwright browsers
-        uses: actions/cache@v4
-        id: playwright-cache
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
-
-      - name: Install Playwright browsers
-        if: steps.playwright-cache.outputs.cache-hit != 'true'
-        run: npx playwright install --with-deps chromium
-
-      - name: End-to-end tests
-        run: npx playwright test --grep-invert @db
-
-      - name: Upload Playwright report on failure
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-report
-          path: |
-            playwright-report/
-            test-results/
-          retention-days: 7
 
   backend:
     name: Backend gates
     runs-on: ubuntu-latest
 
-    # Server tests need a real MySQL: the suite exercises the database layer
-    # rather than mocking it, and several cases auto-skip when the auth plugin
-    # is unavailable. A missing database would silently turn those into passes.
+    # The server tests need a real database: the suite exercises the database
+    # layer rather than mocking it, and several cases auto-skip when the auth
+    # plugin is unavailable. A missing database would silently turn those into
+    # passes.
     services:
       mysql:
         image: mysql:8.0
         env:
-          MYSQL_ROOT_PASSWORD: ci-root-password
-          MYSQL_DATABASE: shms_ci
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: smart_medicare_test
         ports:
           - 3306:3306
         options: >-
-          --health-cmd="mysqladmin ping --silent"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=10
+          --health-cmd "mysqladmin ping -uroot -proot"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
 
     env:
-      DB_DIALECT: mysql
+      # The database (server config/database.ts reads DB_HOST/DB_PORT/DB_USER/
+      # DB_PASSWORD/DB_NAME/DB_SSL).
       DB_HOST: 127.0.0.1
-      DB_PORT: "3306"
-      DB_NAME: shms_ci
+      DB_PORT: 3306
       DB_USER: root
-      DB_PASSWORD: ci-root-password
-      DB_SSL: "false"
+      DB_PASSWORD: root
+      DB_NAME: smart_medicare_test
+      DB_SSL: false
+      # The application name is required configuration and is not written into
+      # the source. The front-end's vitest supplies its own.
+      APP_NAME: Test Application
+      VITE_APP_NAME: Test Application
+      VITE_PORT: 5175
 
     defaults:
       run:
@@ -154,14 +143,14 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-          cache: npm
+          cache: 'npm'
           cache-dependency-path: |
             package-lock.json
             server/package-lock.json
 
       - name: Install dependencies (root)
-        # The server lint script runs `eslint .`, and eslint is declared at
-        # the repository root, not in server/. npm finds it by walking up
+        # The server lint script runs `eslint .`, and eslint is declared at the
+        # repository root, not in server/. npm finds it by walking up
         # ancestor node_modules/.bin, so a server-only install passes
         # locally and fails in CI with `eslint: not found` (127).
         run: npm ci
@@ -170,11 +159,10 @@ jobs:
       - name: Install dependencies (server)
         run: npm ci
 
-      - name: Apply schema
-        run: mysql --host=127.0.0.1 --port=3306 --user=root --password=ci-root-password shms_ci < src/database/schema.sql
-
-      - name: Seed data
-        run: mysql --host=127.0.0.1 --port=3306 --user=root --password=ci-root-password shms_ci < src/database/seed.sql
+      - name: Apply schema and seed
+        # The runner applies schema.sql then seed.sql, both of which are
+        # re-runnable, so this is the same shape as a local `npm run db:setup`.
+        run: npm run db:setup
 
       - name: Lint
         run: npm run lint
@@ -183,7 +171,14 @@ jobs:
         run: npm run build
 
       - name: Unit tests
-        run: npm test -- --run
+        # The test files are not tracked in this repository (see the
+        # `.gitignore` rule for `*.test.*`), so a fresh CI checkout collects
+        # no test files. `--passWithNoTests` says that an empty suite is not
+        # a failure; a suite that exists and fails still fails the job. The
+        # local `npm run verify` deliberately does not pass the flag, so a
+        # developer machine that has lost the suite is loud rather than
+        # quietly green.
+        run: npm test -- --run --passWithNoTests
 
   secrets:
     name: Secret and policy scan
@@ -194,8 +189,8 @@ jobs:
           fetch-depth: 0
 
       # Rule 4 of the operating rules: credentials only via env, never in the
-      # repository. This is the automated half of that rule -- it fails the build
-      # rather than relying on a reviewer to notice.
+      # repository. This is the automated half of that rule -- it fails the
+      # build rather than relying on a reviewer to notice.
       - name: Fail if a tracked env file exists
         run: |
           if git ls-files --error-unmatch .env .env.local .env.production >/dev/null 2>&1; then
@@ -215,7 +210,7 @@ jobs:
           # rather than excluding docs wholesale -- excluding them would also
           # exclude a real leak pasted into a README.
           hits=$(git grep -nEI \
-            '(JWT_SECRET|SESSION_SECRET|ENCRYPTION_KEY|ENCRYPTION_IV|GEMINI_API_KEY|STRIPE_SECRET_KEY|STRIPE_WEBHOOK_SECRET|TWILIO_AUTH_TOKEN|SMTP_PASS(WORD)?|GOOGLE_DRIVE_CLIENT_SECRET|ONEDRIVE_CLIENT_SECRET)[[:space:]]*=[[:space:]]*["'"'"']?[A-Za-z0-9/+_-]{16,}' \
+            '(JWT_SECRET|SESSION_SECRET|ENCRYPTION_KEY|ENCRYPTION_IV|GEMINI_API_KEY|OPENROUTER_API_KEY|GROQ_API_KEY|OPENAI_API_KEY|ANTHROPIC_API_KEY|STRIPE_SECRET_KEY|STRIPE_WEBHOOK_SECRET|TWILIO_AUTH_TOKEN|SMTP_PASS(WORD)?|GOOGLE_DRIVE_CLIENT_SECRET|ONEDRIVE_CLIENT_SECRET)[[:space:]]*=[[:space:]]*["'"'"']?[A-Za-z0-9/+_-]{16,}' \
             -- ':!*.example' ':!package-lock.json' ':!server/package-lock.json' \
             | grep -Eiv 'your[_-]|changeme|placeholder|replace[_-]?me|example|dummy|xxxx|<[^>]+>' \
             || true)

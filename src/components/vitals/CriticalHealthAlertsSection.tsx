@@ -154,8 +154,8 @@ export function CriticalHealthAlertsSection({
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border/60">
             <div className="flex items-center gap-3">
               <div
-                className={`p-2.5 rounded-lg flex items-center justify-center text-white ${
-                  hasCritical ? 'bg-destructive' : 'bg-warning'
+                className={`p-2.5 rounded-lg flex items-center justify-center ${
+                  hasCritical ? 'bg-destructive text-destructive-foreground' : 'bg-warning text-warning-foreground'
                 }`}
               >
                 {hasCritical ? (
@@ -195,10 +195,10 @@ export function CriticalHealthAlertsSection({
                 <Button
                   size="sm"
                   onClick={onOpenLogDialog}
-                  className={`h-8 text-xs font-semibold gap-1.5 shadow-sm text-white ${
+                  className={`h-8 text-xs font-semibold gap-1.5 shadow-sm ${
                     hasCritical
-                      ? 'bg-destructive hover:bg-destructive'
-                      : 'bg-warning hover:bg-warning'
+                      ? 'bg-destructive hover:bg-destructive text-destructive-foreground'
+                      : 'bg-warning hover:bg-warning text-warning-foreground'
                   }`}
                 >
                   <Plus className="h-3.5 w-3.5" />
