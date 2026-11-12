@@ -97,10 +97,10 @@ export function PublicFooter() {
   <Link to="/" className="text-accent hover:text-accent/80 transition-colors">
     {APP_NAME}
   </Link>
-  . All All Rights reserved
+  . All Rights Reserved
 </p>
           <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
-            <Link to="/auth/super-admin/login" className="inline-flex items-center gap-1.5 text-xs text-primary-foreground/65 transition-colors hover:text-primary-foreground focus-visible:text-primary-foreground"><Lock className="h-3.5 w-3.5" aria-hidden="true" /> Super admin</Link>
+            <Link to="/auth/super-admin/login" className="inline-flex items-center gap-1.5 text-xs text-primary-foreground/65 transition-colors hover:text-primary-foreground focus-visible:text-primary-foreground"><Lock className="h-3.5 w-3.5" aria-hidden="true" /> Super Admin</Link>
             <Link to="/auth/login" className="inline-flex items-center gap-1.5 text-xs text-primary-foreground/65 transition-colors hover:text-primary-foreground focus-visible:text-primary-foreground"><Zap className="h-3.5 w-3.5" aria-hidden="true" /> Staff sign in</Link>
           </div>
         </div>
