@@ -2,6 +2,7 @@ import { Outlet, useLocation } from 'react-router-dom';
 import { PublicFooter } from './PublicFooter';
 import { MarketingHeader } from './MarketingHeader';
 import { ScrollProgress } from '@/components/common/ScrollProgress';
+import { SAMChatWidget } from '@/components/sam/SAMChatWidget';
 
 const footerlessAuthenticationPaths = new Set([
   '/auth/login',
@@ -26,6 +27,7 @@ export function PublicLayout() {
       <MarketingHeader />
       <div className="flex-1" id="main-content" role="main"><Outlet /></div>
       {hasFooter && <PublicFooter />}
+      <SAMChatWidget />
     </div>
   );
 }

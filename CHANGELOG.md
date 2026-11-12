@@ -63,3 +63,12 @@
 - Document upload now validates patient, category, storage provider, notes, tags and file extension/MIME before opening a transaction; cross-tenant patient attachment refused.
 - Upload, update and delete are confined to the caller's hospital; storage-OAuth initiators require the documents permission and use single-use, expiring, PKCE-bound state transactions.
 - PWA no longer caches external fonts (self-hosted); dev demo password fallback removed; analytics payload bounded.
+
+## 2026-11-12 - AI support assistant (SAM)
+- A floating support assistant is now available on every page. It opens with a greeting, offers suggested questions, supports keyboard-only use, shows the model answering, and lets a user rate an answer.
+- The assistant answers questions about the platform only. It is given no account, patient record, or other clinical data, and it cannot look any up. Questions handed to a human are recorded in the audit trail with the reason and without the conversation.
+- A Super Admin can choose the AI provider and model from a dropdown, set a fallback provider and model, switch the assistant off, set the contact a handed-off question is routed to, and replace the assistant's picture. The picture may be a WebP or an AVIF file, up to 2 MB.
+- No provider credential is exposed to the browser. Provider keys are read from the server environment; the browser only ever chooses which provider to talk to.
+- The support contact an operator configures is checked before it is stored and again before it is shown: only an email address is accepted as an email address, and only an http or https address is offered as a link.
+- Operator impact: the assistant answers with a labelled placeholder until a provider key is set. New environment variables are optional and all default to a working configuration.
+- Accessibility: the panel is a labelled dialog, the conversation is announced politely, the floating button is reachable and operable from the keyboard, and the assistant's picture is marked decorative so it is not announced twice.

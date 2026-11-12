@@ -7,6 +7,7 @@ import { PasswordChangeModal } from '@/components/security/PasswordChangeModal';
 import { OfflineIndicator } from '@/components/OfflineIndicator';
 import { ScrollProgress } from '@/components/common/ScrollProgress';
 import { TwoFactorReminder } from '@/components/TwoFactorReminder';
+import { SAMChatWidget } from '@/components/sam/SAMChatWidget';
 
 import { analyticsService } from '@/services/analytics';
 
@@ -44,6 +45,7 @@ export function AppLayout() {
             <PasswordChangeModal />
             <OfflineIndicator />
             <TwoFactorReminder />
+            <SAMChatWidget />
             <Outlet />
           </main>
         </div>

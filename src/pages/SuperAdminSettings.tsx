@@ -1,12 +1,21 @@
 import { useState, useEffect } from 'react';
-import { api, type SuperAdminBackup, type SuperAdminSetting } from '@/services/api';
+import { api, type SamConfig, type SuperAdminBackup, type SuperAdminSetting } from '@/services/api';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
-import { AlertCircle, CheckCircle, HardDriveUpload, HardDriveDownload, HeartPulse, ShieldCheck, Copy, Check } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { AlertCircle, CheckCircle, HardDriveUpload, HardDriveDownload, HeartPulse, ShieldCheck, Copy, Check, Bot, Upload, RefreshCw, Trash2, Plug } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { resolveApiAssetUrl } from '@/config/api';
 import { toast } from 'sonner';
 
 /**
@@ -213,6 +222,467 @@ function SuperAdminTwoFactor() {
   );
 }
 
+/**
+ * The providers SAM can be pointed at.
+ *
+ * The list is a closed set on this deployment: each one names an API the
+ * server holds a key for, and a provider that is not on this list has no
+ * route through the server.
+ */
+const SAM_PROVIDERS = [
+  { value: 'openrouter', label: 'OpenRouter' },
+  { value: 'gemini', label: 'Gemini' },
+  { value: 'groq', label: 'Groq' },
+  { value: 'openai', label: 'OpenAI' },
+  { value: 'anthropic', label: 'Anthropic' },
+];
+
+/** The largest profile image the server accepts. */
+const SAM_IMAGE_MAX_BYTES = 2 * 1024 * 1024;
+
+/** The formats the server accepts for a profile image. */
+const SAM_IMAGE_TYPES = ['image/webp', 'image/avif'];
+
+/**
+ * Configuration for SAM, the AI support assistant.
+ *
+ * The section is here, in the operator's own console, because the settings
+ * it holds decide what the assistant says and who can reach a human when it
+ * cannot help: the provider and model that answer, the fallback for when
+ * they fail, and the address a human support agent can be reached at.
+ */
+function SAMSettings() {
+  const [config, setConfig] = useState<SamConfig | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [testing, setTesting] = useState(false);
+  const [uploading, setUploading] = useState(false);
+
+  const [models, setModels] = useState<string[]>([]);
+  const [modelsError, setModelsError] = useState<string | null>(null);
+  const [loadingModels, setLoadingModels] = useState(false);
+
+  const [fallbackModels, setFallbackModels] = useState<string[]>([]);
+  const [fallbackModelsError, setFallbackModelsError] = useState<string | null>(null);
+
+  const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null);
+  const [usingDefaultImage, setUsingDefaultImage] = useState(true);
+  const [imageError, setImageError] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
+  const loadConfig = async () => {
+    try {
+      setLoading(true);
+      const loaded = await api.getSAMConfig();
+      setConfig(loaded);
+      setProfileImageUrl(loaded.profileImageUrl ?? null);
+      setUsingDefaultImage(!loaded.profileImageUrl);
+    } catch (err: any) {
+      setImageError(err?.message || 'Failed to load SAM configuration');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadConfig();
+  }, []);
+
+  // The model catalogue belongs to the provider, so it is fetched when the
+  // provider changes rather than being a fixed list.
+  const loadModels = async (provider: string, target: 'primary' | 'fallback') => {
+    if (!provider) return;
+    if (target === 'primary') {
+      setLoadingModels(true);
+      setModelsError(null);
+    } else {
+      setFallbackModelsError(null);
+    }
+    try {
+      const result = await api.getSAMModels(provider);
+      const list = Array.isArray(result?.models) ? result.models : [];
+      if (target === 'primary') {
+        setModels(list);
+      } else {
+        setFallbackModels(list);
+      }
+    } catch (err: any) {
+      const message = err?.message || 'Could not load the model list';
+      if (target === 'primary') {
+        setModels([]);
+        setModelsError(message);
+      } else {
+        setFallbackModels([]);
+        setFallbackModelsError(message);
+      }
+    } finally {
+      if (target === 'primary') setLoadingModels(false);
+    }
+  };
+
+  useEffect(() => {
+    const provider = config?.provider;
+    if (!provider) return;
+    void loadModels(provider, 'primary');
+  }, [config?.provider]);
+
+  useEffect(() => {
+    const provider = config?.fallbackProvider;
+    if (!provider) {
+      setFallbackModels([]);
+      return;
+    }
+    void loadModels(provider, 'fallback');
+  }, [config?.fallbackProvider]);
+
+  const update = <K extends keyof SamConfig>(key: K, value: SamConfig[K]) => {
+    setConfig((current) => (current ? { ...current, [key]: value } : current));
+  };
+
+  const handleUpload = async (file: File | null | undefined) => {
+    if (!file) return;
+    setImageError(null);
+
+    if (!SAM_IMAGE_TYPES.includes(file.type)) {
+      setImageError('Choose a WebP or AVIF image.');
+      return;
+    }
+    if (file.size > SAM_IMAGE_MAX_BYTES) {
+      setImageError('The image must be 2 MB or smaller.');
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const result = await api.uploadSAMProfileImage(file);
+      setProfileImageUrl(result?.url ?? null);
+      setUsingDefaultImage(false);
+      setSelectedFile(null);
+      toast.success('SAM profile image uploaded.');
+    } catch (err: any) {
+      toast.error(err?.message || 'Could not upload the profile image.');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleRemoveImage = async () => {
+    setImageError(null);
+    setUploading(true);
+    try {
+      const result = await api.deleteSAMProfileImage();
+      setProfileImageUrl(result?.url ?? null);
+      setUsingDefaultImage(true);
+      toast.success('SAM is back to the default avatar.');
+    } catch (err: any) {
+      toast.error(err?.message || 'Could not remove the profile image.');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleTest = async () => {
+    setTesting(true);
+    try {
+      const response = await api.sendSAMMessage([
+        { role: 'user', content: 'Reply with the word "connected" so the operator knows the model answered.' },
+      ]);
+      toast.success(`SAM answered: ${response.text.slice(0, 120)}`);
+    } catch (err: any) {
+      toast.error(err?.message || 'SAM could not be reached.');
+    } finally {
+      setTesting(false);
+    }
+  };
+
+  const handleSave = async () => {
+    if (!config) return;
+    setSaving(true);
+    try {
+      const saved = await api.updateSAMConfig(config);
+      setConfig(saved);
+      toast.success('SAM configuration saved.');
+    } catch (err: any) {
+      toast.error(err?.message || 'Could not save the SAM configuration.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <Card className="bg-card border-border">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-foreground">
+            <Bot className="h-5 w-5 text-accent" aria-hidden="true" />
+            AI Support Agent (SAM)
+          </CardTitle>
+          <CardDescription className="text-muted-foreground">Loading configuration…</CardDescription>
+        </CardHeader>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="bg-card border-border">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-foreground">
+          <Bot className="h-5 w-5 text-accent" aria-hidden="true" />
+          AI Support Agent (SAM)
+        </CardTitle>
+        <CardDescription className="text-muted-foreground">
+          Choose the model that answers support questions, the fallback used when
+          it fails, and how a visitor reaches a human agent.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        {imageError && (
+          <div className="p-4 rounded-lg bg-destructive/10 border border-destructive/20 flex items-start gap-2">
+            <AlertCircle className="w-5 h-5 text-destructive shrink-0 mt-0.5" />
+            <p className="text-sm text-destructive">{imageError}</p>
+          </div>
+        )}
+
+        {/* Profile image */}
+        <div className="space-y-3">
+          <Label htmlFor="sam-profile-image" className="text-muted-foreground">
+            Profile image
+          </Label>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <img
+              src={resolveApiAssetUrl(profileImageUrl) || '/sam-avatar-default.svg'}
+              alt="SAM profile image"
+              className="h-14 w-14 rounded-full border border-border object-cover"
+            />
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+              <Input
+                id="sam-profile-image"
+                type="file"
+                accept=".webp,.avif"
+                className="max-w-xs"
+                onChange={(event) => {
+                  setImageError(null);
+                  setSelectedFile(event.target.files?.[0] ?? null);
+                }}
+              />
+              <div className="flex flex-wrap items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={uploading || !selectedFile}
+                  onClick={() => void handleUpload(selectedFile)}
+                >
+                  <Upload className="w-4 h-4 mr-2" aria-hidden="true" />
+                  {uploading ? 'Uploading...' : 'Upload'}
+                </Button>
+                {!usingDefaultImage && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={uploading}
+                    onClick={handleRemoveImage}
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" aria-hidden="true" />
+                    Remove
+                  </Button>
+                )}
+              </div>
+            </div>
+          </div>
+          <p className="text-xs text-muted-foreground">WebP or AVIF only, up to 2 MB.</p>
+        </div>
+
+        {/* Primary provider and model */}
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-2">
+            <Label htmlFor="sam-provider" className="text-muted-foreground">Model provider</Label>
+            <Select
+              value={config?.provider || 'openrouter'}
+              onValueChange={(value) => update('provider', value)}
+            >
+              <SelectTrigger id="sam-provider" className="w-full" aria-label="Model provider">
+                <SelectValue placeholder="Select a provider" />
+              </SelectTrigger>
+              <SelectContent>
+                {SAM_PROVIDERS.map((provider) => (
+                  <SelectItem key={provider.value} value={provider.value}>
+                    {provider.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="sam-model" className="text-muted-foreground">Model</Label>
+            <div className="flex items-center gap-2">
+              <Select
+                value={config?.model || ''}
+                onValueChange={(value) => update('model', value)}
+                disabled={loadingModels}
+              >
+                <SelectTrigger id="sam-model" className="w-full" aria-label="Model">
+                  <SelectValue placeholder={loadingModels ? 'Loading models…' : 'Select a model'} />
+                </SelectTrigger>
+                <SelectContent>
+                  {models.map((model) => (
+                    <SelectItem key={model} value={model}>
+                      {model}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                aria-label="Refresh the model list"
+                disabled={loadingModels}
+                onClick={() => {
+                  if (config?.provider) void loadModels(config.provider, 'primary');
+                }}
+              >
+                <RefreshCw className="w-4 h-4" aria-hidden="true" />
+              </Button>
+            </div>
+            {modelsError && (
+              <p className="text-xs text-destructive">
+                {modelsError}{' '}
+                <button
+                  type="button"
+                  className="underline underline-offset-2"
+                  onClick={() => {
+                    if (config?.provider) void loadModels(config.provider, 'primary');
+                  }}
+                >
+                  Retry
+                </button>
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Fallback provider and model */}
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-2">
+            <Label htmlFor="sam-fallback-provider" className="text-muted-foreground">Fallback provider</Label>
+            <Select
+              value={config?.fallbackProvider || 'none'}
+              onValueChange={(value) =>
+                update('fallbackProvider', value === 'none' ? null : value)
+              }
+            >
+              <SelectTrigger id="sam-fallback-provider" className="w-full" aria-label="Fallback provider">
+                <SelectValue placeholder="No fallback" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">No fallback</SelectItem>
+                {SAM_PROVIDERS.map((provider) => (
+                  <SelectItem key={provider.value} value={provider.value}>
+                    {provider.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="sam-fallback-model" className="text-muted-foreground">Fallback model</Label>
+            <Select
+              value={config?.fallbackModel || ''}
+              onValueChange={(value) => update('fallbackModel', value)}
+              disabled={!config?.fallbackProvider}
+            >
+              <SelectTrigger id="sam-fallback-model" className="w-full" aria-label="Fallback model">
+                <SelectValue placeholder="Select a model" />
+              </SelectTrigger>
+              <SelectContent>
+                {fallbackModels.map((model) => (
+                  <SelectItem key={model} value={model}>
+                    {model}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {fallbackModelsError && (
+              <p className="text-xs text-destructive">
+                {fallbackModelsError}{' '}
+                <button
+                  type="button"
+                  className="underline underline-offset-2"
+                  onClick={() => {
+                    if (config?.fallbackProvider) void loadModels(config.fallbackProvider, 'fallback');
+                  }}
+                >
+                  Retry
+                </button>
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Human support */}
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-2">
+            <Label htmlFor="sam-support-email" className="text-muted-foreground">Human support email</Label>
+            <Input
+              id="sam-support-email"
+              type="email"
+              placeholder="support@example.com"
+              value={config?.humanSupportEmail ?? ''}
+              onChange={(event) => update('humanSupportEmail', event.target.value)}
+              className="bg-background border-border"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="sam-support-url" className="text-muted-foreground">Human support URL</Label>
+            <Input
+              id="sam-support-url"
+              type="url"
+              placeholder="https://example.com/support"
+              value={config?.humanSupportUrl ?? ''}
+              onChange={(event) => update('humanSupportUrl', event.target.value)}
+              className="bg-background border-border"
+            />
+          </div>
+        </div>
+
+        {/* Switch */}
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <Label htmlFor="sam-enabled" className="text-muted-foreground">SAM enabled</Label>
+          <Switch
+            id="sam-enabled"
+            checked={config?.enabled ?? false}
+            onCheckedChange={(checked) => update('enabled', checked)}
+            aria-label="SAM enabled"
+          />
+        </div>
+
+        {/* Actions */}
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleTest}
+            disabled={testing}
+          >
+            <Plug className="w-4 h-4 mr-2" aria-hidden="true" />
+            {testing ? 'Testing...' : 'Test Connection'}
+          </Button>
+          <Button
+            type="button"
+            onClick={handleSave}
+            disabled={saving}
+            className="bg-accent hover:bg-accent/90 text-accent-foreground"
+          >
+            {saving ? 'Saving...' : 'Save SAM configuration'}
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function SuperAdminSettings() {
   const [settings, setSettings] = useState<SuperAdminSetting[]>([]);
   const [loading, setLoading] = useState(true);
@@ -403,6 +873,9 @@ export default function SuperAdminSettings() {
         {/* Two-factor for the master session. First, because it is the one
             control here that affects who can reach the console at all. */}
         <SuperAdminTwoFactor />
+
+        {/* The AI support assistant's configuration. */}
+        <SAMSettings />
 
         {/* System Operations */}
         <Card className="bg-card border-border">

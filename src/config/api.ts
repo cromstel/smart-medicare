@@ -80,3 +80,24 @@ export const API_BASE_URL = resolveApiBaseUrl();
 export const API_ORIGIN = API_BASE_URL.startsWith('http')
   ? API_BASE_URL.replace(/\/api$/, '')
   : '';
+
+/**
+ * Resolves a path the API serves into an address the browser can fetch.
+ *
+ * The API may be on another origin than the page, so a relative path to an
+ * API-served file -- an uploaded image, a download -- has to be resolved
+ * against the API origin rather than against the page.
+ *
+ * A path that is not an API path is left alone. The front end has assets of
+ * its own, and resolving one of those against the API origin asks a server
+ * that has never heard of it for a file it does not have.
+ *
+ * An absolute URL is returned unchanged: the server has already said where
+ * the file is.
+ */
+export const resolveApiAssetUrl = (path: string | null | undefined): string => {
+  if (!path) return '';
+  if (/^https?:\/\//i.test(path) || path.startsWith('data:')) return path;
+  if (API_ORIGIN && path.startsWith('/api/')) return `${API_ORIGIN}${path}`;
+  return path;
+};

@@ -290,6 +290,130 @@ export interface EmergencyAdmission {
   dischargedAt: string | null;
 }
 
+// ── SAM — the AI support assistant ──────────────────────────────────────────
+//
+// SAM answers questions about the platform. Its configuration lives on the
+// server (which provider, which model, whether it is switched on at all), so
+// the browser reads that configuration rather than deciding it.
+//
+// Every payload here is unwrapped explicitly instead of being cast: a
+// response shape that differs from the contract must be reported at the
+// boundary, not three components downstream as "x.map is not a function".
+
+/** One turn of the conversation as SAM receives it. */
+export interface SamChatMessage {
+  role: string;
+  content: string;
+}
+
+/** SAM's answer to one message. */
+export interface SamChatResponse {
+  /** The answer, as the assistant wrote it. */
+  text: string;
+  /** The server's identifier for the answer, used by the feedback endpoint. */
+  messageId?: string;
+  /** True when SAM decided a human should follow up. */
+  escalate?: boolean;
+  /** Why the answer was handed to a person, when the server reports it. */
+  escalateReason?: string;
+  /** The provider that answered, when the server reports it. */
+  provider?: string;
+  /** The model that answered, when the server reports it. */
+  model?: string;
+}
+
+/** How SAM is configured on this deployment. */
+export interface SamConfig {
+  /** Whether the assistant is available at all. */
+  enabled: boolean;
+  /** The provider that answers (openrouter, gemini, groq, openai, anthropic). */
+  provider: string;
+  /** The model that answers within that provider. */
+  model: string;
+  /** The provider used when the primary one fails, if any. */
+  fallbackProvider: string | null;
+  /** The model used within the fallback provider, if any. */
+  fallbackModel: string | null;
+  /** The address a human support agent can be reached at, if any. */
+  humanSupportEmail: string | null;
+  /** The support portal a human support agent can be reached through, if any. */
+  humanSupportUrl: string | null;
+  /** The current profile image, if one has been uploaded. */
+  profileImageUrl: string | null;
+}
+
+/** Reads a value under either a camelCase or a snake_case key. */
+function readSamField(record: Record<string, unknown>, camel: string, snake: string): unknown {
+  const value = record[camel] ?? record[snake];
+  return value;
+}
+
+/**
+ * The configuration record, wherever the server nests it.
+ *
+ * The endpoint may answer with the record itself or wrap it (`{ config: … }`,
+ * `{ data: … }`). All three are unwrapped here so the caller reads one shape.
+ */
+function unwrapSamConfig(data: unknown): SamConfig {
+  const outer = (data && typeof data === 'object') ? (data as Record<string, unknown>) : {};
+  const record =
+    (outer.config && typeof outer.config === 'object')
+      ? (outer.config as Record<string, unknown>)
+      : (outer.data && typeof outer.data === 'object')
+        ? (outer.data as Record<string, unknown>)
+        : outer;
+
+  const asText = (value: unknown): string | null =>
+    typeof value === 'string' && value.trim() !== '' ? value.trim() : null;
+  const asFlag = (value: unknown): boolean => value === true || value === 'true' || value === 1;
+
+  return {
+    enabled: asFlag(readSamField(record, 'enabled', 'enabled')),
+    provider: asText(readSamField(record, 'provider', 'provider')) ?? '',
+    model: asText(readSamField(record, 'model', 'model')) ?? '',
+    fallbackProvider: asText(readSamField(record, 'fallbackProvider', 'fallback_provider')),
+    fallbackModel: asText(readSamField(record, 'fallbackModel', 'fallback_model')),
+    humanSupportEmail: asText(readSamField(record, 'humanSupportEmail', 'human_support_email')),
+    humanSupportUrl: asText(readSamField(record, 'humanSupportUrl', 'human_support_url')),
+    profileImageUrl: asText(readSamField(record, 'profileImageUrl', 'profile_image_url')),
+  };
+}
+
+/**
+ * SAM's answer, wherever the server nests it.
+ *
+ * A payload with no readable text is rejected here rather than rendered as an
+ * empty bubble.
+ */
+function unwrapSamChatResponse(data: unknown): SamChatResponse {
+  const outer = (data && typeof data === 'object') ? (data as Record<string, unknown>) : {};
+  const record =
+    (outer.response && typeof outer.response === 'object')
+      ? (outer.response as Record<string, unknown>)
+      : (outer.data && typeof outer.data === 'object')
+        ? (outer.data as Record<string, unknown>)
+        : outer;
+
+  const text = record.text ?? record.content ?? record.answer;
+  if (typeof text !== 'string' || text.trim() === '') {
+    throw new ApiError(`Unexpected response shape: ${describe(data)}`, 200);
+  }
+
+  const messageId = record.messageId ?? record.message_id ?? record.id;
+  const provider = record.provider;
+  const model = record.model;
+  const escalateReason = record.escalateReason ?? record.escalate_reason;
+
+  return {
+    text,
+    messageId: typeof messageId === 'string' || typeof messageId === 'number' ? String(messageId) : undefined,
+    escalate: record.escalate === true || record.escalate === 'true',
+    escalateReason: typeof escalateReason === 'string' ? escalateReason : undefined,
+    provider: typeof provider === 'string' ? provider : undefined,
+    model: typeof model === 'string' ? model : undefined,
+  };
+}
+
 /** The body of an admission write. */
 export interface EmergencyAdmissionInput {
   /** The patient's code (e.g. "P-1002") or their numeric id. */
@@ -1792,6 +1916,136 @@ class ApiService {
       body: JSON.stringify({ clear_two_factor: clearTwoFactor }),
     });
     return this.handleResponse(response);
+  }
+
+  // ── SAM (AI support assistant) ───────────────────────────────────────────
+
+  /**
+   * Sends the conversation to SAM and returns the answer.
+   *
+   * `currentPage` is the route the visitor is on, and only the pathname: a
+   * query string can carry a patient identifier or a search term, and the
+   * assistant has no business receiving either.
+   */
+  async sendSAMMessage(
+    messages: SamChatMessage[],
+    currentPage?: string
+  ): Promise<SamChatResponse> {
+    const response = await fetch(`${API_BASE_URL}/sam/chat`, {
+      method: 'POST',
+      headers: this.getHeaders(),
+      body: JSON.stringify({
+        messages,
+        currentPage: currentPage ?? '',
+      }),
+    });
+    const data = await this.handleResponse<unknown>(response);
+    return unwrapSamChatResponse(data);
+  }
+
+  /** SAM's configuration on this deployment. */
+  async getSAMConfig(): Promise<SamConfig> {
+    const response = await fetch(`${API_BASE_URL}/sam/config`, {
+      headers: this.getHeaders(),
+    });
+    const data = await this.handleResponse<unknown>(response);
+    return unwrapSamConfig(data);
+  }
+
+  /** Writes SAM's configuration and returns what the server stored. */
+  async updateSAMConfig(config: Partial<SamConfig>): Promise<SamConfig> {
+    const response = await fetch(`${API_BASE_URL}/sam/config`, {
+      method: 'PUT',
+      headers: this.getHeaders(),
+      body: JSON.stringify(config),
+    });
+    const data = await this.handleResponse<unknown>(response);
+    return unwrapSamConfig(data);
+  }
+
+  /**
+   * The models a provider offers.
+   *
+   * The provider's catalogue is a collection, so it is unwrapped through the
+   * same helper the other collection endpoints use rather than being cast:
+   * a payload that is not a list of model names is reported here instead of
+   * surfacing downstream as "models.map is not a function".
+   */
+  async getSAMModels(provider: string): Promise<{ provider: string; models: string[] }> {
+    const encoded = encodeURIComponent(provider);
+    let response: Response;
+    try {
+      response = await fetch(`${API_BASE_URL}/sam/models?provider=${encoded}`, {
+        headers: this.getHeaders(),
+      });
+    } catch {
+      throw new ApiError('Could not reach the model catalogue.', 0);
+    }
+
+    const data = await this.handleResponse<unknown>(response);
+    const record = (data && typeof data === 'object') ? (data as Record<string, unknown>) : {};
+    const models = unwrapCollection(record.models ?? data, 'models').filter(
+      (entry): entry is string => typeof entry === 'string'
+    );
+    const reported = record.provider;
+    return {
+      provider: typeof reported === 'string' ? reported : provider,
+      models,
+    };
+  }
+
+  /**
+   * Uploads SAM's profile image.
+   *
+   * The body is multipart, so the content type is left to the browser to set
+   * (with a boundary) rather than declared as JSON.
+   */
+  async uploadSAMProfileImage(file: File): Promise<{ url: string }> {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const headers: HeadersInit = {};
+    const token = getCookieToken();
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const response = await fetch(`${API_BASE_URL}/sam/profile-image`, {
+      method: 'POST',
+      headers,
+      body: formData,
+    });
+    return this.handleResponse(response);
+  }
+
+  /** The current SAM profile image. */
+  async getSAMProfileImage(): Promise<{ url: string }> {
+    const response = await fetch(`${API_BASE_URL}/sam/profile-image`, {
+      headers: this.getHeaders(),
+    });
+    return this.handleResponse(response);
+  }
+
+  /** Removes the uploaded profile image, restoring the default mark. */
+  async deleteSAMProfileImage(): Promise<{ url: string }> {
+    const response = await fetch(`${API_BASE_URL}/sam/profile-image`, {
+      method: 'DELETE',
+      headers: this.getHeaders(),
+    });
+    return this.handleResponse(response);
+  }
+
+  /**
+   * Records whether an answer was helpful.
+   *
+   * Feedback is a courtesy, not a transaction: a failure here is not worth
+   * interrupting the visitor with, so the caller swallows it.
+   */
+  async sendSAMFeedback(messageId: string, helpful: boolean): Promise<void> {
+    const response = await fetch(`${API_BASE_URL}/sam/feedback`, {
+      method: 'POST',
+      headers: this.getHeaders(),
+      body: JSON.stringify({ messageId, helpful }),
+    });
+    await this.handleResponse(response);
   }
 
 }

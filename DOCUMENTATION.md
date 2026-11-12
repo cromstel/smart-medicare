@@ -162,6 +162,13 @@ Smart MediCare follows a modern full-stack architecture prioritizing type safety
 - **Theme Selector**: Instant toggle between Dark and Light mode across all components.
 - **Security & Passkey Registration**: Manage WebAuthn credentials, password updates, and session preferences.
 
+### 4.13 AI Support Assistant (SAM)
+- **Always-Available Help**: A chat assistant in the bottom-right corner of every page. It opens with a greeting, offers suggested questions, and can be opened and closed from the keyboard.
+- **Platform Knowledge Only**: SAM answers questions about the platform — its modules, its roles, its navigation, and how to complete common tasks. It has **no access to any account, patient record, or clinical data**, and it is never given any.
+- **Operator-Configured Model**: The Super Admin chooses the AI provider and model from a dropdown (OpenRouter, Gemini, Groq, OpenAI, Anthropic) and sets a fallback. The assistant's model is shown in its header.
+- **Human Handoff**: When a question needs a person — an account action, a billing matter, a complaint, or a request for a human — SAM says so and offers the configured support contact.
+- **Replaceable Avatar**: The Super Admin can upload a custom assistant picture in WebP or AVIF format.
+
 ---
 
 ## 5. Quick-Start Demo Credentials
@@ -203,6 +210,13 @@ Set the variables in `.env.local` (see `.env.example`) and re-run the seed. When
 2. Locate the pending prescription in the queue.
 3. Verify patient details, allergy warnings, and prescribed dosages.
 4. Click **"Fulfill Prescription"** to automatically deduct inventory stock and log the audit record.
+
+### How to Ask SAM (the AI Support Assistant)
+1. Click the assistant's picture in the bottom-right corner of any page (or press **Ctrl/Cmd + K**).
+2. Read the greeting, then click one of the suggested questions or type your own.
+3. Press **Enter** to send; **Shift + Enter** starts a new line. **Escape** closes the panel.
+4. Rate an answer with the thumbs-up or thumbs-down control under it.
+5. If SAM hands the question to a person, follow the support contact it offers.
 
 ### How to Toggle Dark / Light Theme
 1. Look at the top navigation header bar.
@@ -349,10 +363,11 @@ smart-health-management/
 
 Smart MediCare is architected to conform with healthcare security standards:
 
-1. **Client Confidentiality**: No secret API keys (`GEMINI_API_KEY`, `STRIPE_SECRET_KEY`) are exposed in frontend bundles. All external requests proxy through server endpoints.
+1. **Client Confidentiality**: No secret API keys (`GEMINI_API_KEY`, `OPENROUTER_API_KEY`, `STRIPE_SECRET_KEY`) are exposed in frontend bundles. All external requests proxy through server endpoints.
 2. **Data Minimization & Encryption**: Passwords are hashed using `bcryptjs`. Session tokens are managed securely.
 3. **Auditability**: All sensitive read/write operations log immutable entries to the `AuditContext` containing timestamps and user identification.
 4. **Access Governance**: Pages and API routes strictly validate role permissions (e.g., non-pharmacists cannot approve drug fulfillment).
+5. **Support Assistant Isolation**: The AI support assistant answers questions about the platform only. It is never given an account, a patient record, or any other clinical data, and it cannot look any up. Questions handed to a human are recorded in the audit trail with the reason and without the conversation.
 
 ---
 
