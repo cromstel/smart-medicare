@@ -42,7 +42,7 @@ export interface SamChatResponse {
 export const DEFAULT_PROVIDER: SamProviderName = 'openrouter';
 
 /** The model used when nothing has been configured. */
-export const DEFAULT_MODEL = 'meta-llama/llama-3.1-8b-instruct:free';
+export const DEFAULT_MODEL = 'google/gemma-4-31b-it:free';
 
 /**
  * The environment variable that holds each provider's key.
@@ -79,14 +79,18 @@ export interface SamProviderDescriptor {
 export const SAM_PROVIDERS: Record<SamProviderName, SamProviderDescriptor> = {
   openrouter: {
     label: 'OpenRouter',
-    defaultModel: 'meta-llama/llama-3.1-8b-instruct:free',
+    defaultModel: 'google/gemma-4-31b-it:free',
+    // The curated list is a fallback for when the live catalogue cannot be
+    // read. It is refreshed against the catalogue periodically: OpenRouter
+    // withdraws free models, and a list that names a withdrawn model is a
+    // list that cannot answer anything.
     models: [
-      'meta-llama/llama-3.1-8b-instruct:free',
-      'meta-llama/llama-3.1-70b-instruct:free',
-      'mistralai/mistral-7b-instruct:free',
-      'google/gemma-2-9b-it:free',
-      'microsoft/phi-3-mini-128k-instruct:free',
-      'qwen/qwen-2-7b-instruct:free',
+      'google/gemma-4-31b-it:free',
+      'google/gemma-4-26b-a4b-it:free',
+      'nvidia/nemotron-3.5-lightning:free',
+      'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free',
+      'nvidia/nemotron-3.5-super-vl:free',
+      'liquid/lfm-3-1.7b:free',
     ],
     envKey: PROVIDER_ENV_KEYS.openrouter,
     endpoint: 'https://openrouter.ai/api/v1/chat/completions',
