@@ -165,7 +165,7 @@ Smart MediCare follows a modern full-stack architecture prioritizing type safety
 ### 4.13 AI Support Assistant (SAM)
 - **Always-Available Help**: A chat assistant in the bottom-right corner of every page. It opens with a greeting, offers suggested questions, and can be opened and closed from the keyboard.
 - **Platform Knowledge Only**: SAM answers questions about the platform — its modules, its roles, its navigation, and how to complete common tasks. It has **no access to any account, patient record, or clinical data**, and it is never given any.
-- **Operator-Configured Model**: The Super Admin chooses the AI provider and model from a dropdown (OpenRouter, Gemini, Groq, OpenAI, Anthropic) and sets a fallback. The assistant's model is shown in its header.
+- **Operator-Configured Model**: The Super Admin chooses the AI provider and model from a dropdown (OpenRouter, Gemini, Groq, OpenAI, Anthropic) and sets a fallback. The model list is read from the provider, so the offered models are the ones actually available. The assistant's model is shown in its header.
 - **Human Handoff**: When a question needs a person — an account action, a billing matter, a complaint, or a request for a human — SAM says so and offers the configured support contact.
 - **Replaceable Avatar**: The Super Admin can upload a custom assistant picture in WebP or AVIF format.
 
